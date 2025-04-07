@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,7 +29,7 @@ const Dashboard = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back to Healthkart Express
+            Welcome back to HealthAid Reminder System
           </p>
         </div>
       </div>
