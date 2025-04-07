@@ -29,8 +29,6 @@ const Login = () => {
           title: "Login successful",
           description: "Welcome back to Healthkart Express",
         });
-        
-        // Make sure to navigate to the dashboard
         navigate('/');
       } else {
         toast({
