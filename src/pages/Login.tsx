@@ -21,7 +21,7 @@ const Login = () => {
     // For demo purposes, we'll use a timeout to simulate authentication
     setTimeout(() => {
       // Simple validation - in a real app, you'd implement actual authentication
-      if (email === 'staff@healthkart.com' && password === 'password123') {
+      if (email === 'staff@healthkart.com' && password === 'health123') {
         // Set authentication state
         localStorage.setItem("isAuthenticated", "true");
         
@@ -82,7 +82,7 @@ const Login = () => {
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <p className="text-sm text-gray-500">Demo credentials: staff@healthkart.com / password123</p>
+          <p className="text-sm text-gray-500">Demo credentials: staff@healthkart.com / health123</p>
         </CardFooter>
       </Card>
     </div>
