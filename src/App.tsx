@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Patients from "./pages/Patients";
 import Reminders from "./pages/Reminders";
@@ -27,18 +27,6 @@ const App = () => {
       setIsAuthenticated(true);
     }
   }, []);
-
-  // Function to handle login success
-  const login = () => {
-    localStorage.setItem("isAuthenticated", "true");
-    setIsAuthenticated(true);
-  };
-
-  // Function to handle logout
-  const logout = () => {
-    localStorage.removeItem("isAuthenticated");
-    setIsAuthenticated(false);
-  };
 
   // Protected route component
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -65,7 +53,9 @@ const App = () => {
               path="/" 
               element={
                 <ProtectedRoute>
-                  <Index />
+                  <Layout>
+                    <Dashboard />
+                  </Layout>
                 </ProtectedRoute>
               } 
             />

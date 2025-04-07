@@ -30,7 +30,7 @@ const Login = () => {
           description: "Welcome back to Healthkart Express",
         });
         
-        // Make sure to navigate to the dashboard
+        // Redirect to dashboard
         navigate('/');
       } else {
         toast({
