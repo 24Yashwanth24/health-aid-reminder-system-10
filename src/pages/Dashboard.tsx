@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Calendar, Users, Pill, Truck, CreditCard, Bell } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 const Dashboard = () => {
   // Mock data
@@ -28,7 +29,7 @@ const Dashboard = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back to HealthAid Reminder System
+            Welcome back to Healthkart Express
           </p>
         </div>
       </div>
