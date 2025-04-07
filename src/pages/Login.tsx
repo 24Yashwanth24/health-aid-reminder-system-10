@@ -22,6 +22,9 @@ const Login = () => {
     setTimeout(() => {
       // Simple validation - in a real app, you'd implement actual authentication
       if (email === 'staff@healthkart.com' && password === 'password123') {
+        // Set authentication state
+        localStorage.setItem("isAuthenticated", "true");
+        
         toast({
           title: "Login successful",
           description: "Welcome back to Healthkart Express",

@@ -29,7 +29,7 @@ const Dashboard = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back to HealthAid Reminder System
+            Welcome back to Healthkart Express
           </p>
         </div>
       </div>
