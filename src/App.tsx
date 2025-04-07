@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import Dashboard from "./pages/Dashboard";
+import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Patients from "./pages/Patients";
 import Reminders from "./pages/Reminders";
@@ -17,7 +17,6 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   // Check if user is authenticated
   useEffect(() => {
@@ -27,19 +26,25 @@ const App = () => {
     if (checkAuth === "true") {
       setIsAuthenticated(true);
     }
-    setIsLoading(false);
   }, []);
+
+  // Function to handle login success
+  const login = () => {
+    localStorage.setItem("isAuthenticated", "true");
+    setIsAuthenticated(true);
+  };
+
+  // Function to handle logout
+  const logout = () => {
+    localStorage.removeItem("isAuthenticated");
+    setIsAuthenticated(false);
+  };
 
   // Protected route component
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    if (isLoading) {
-      return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-    }
-    
     if (!isAuthenticated) {
       return <Navigate to="/login" replace />;
     }
-    
     return <>{children}</>;
   };
 
@@ -51,25 +56,17 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route 
-              path="/" 
+              path="/login" 
               element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Dashboard />
-                  </Layout>
-                </ProtectedRoute>
+                isAuthenticated ? <Navigate to="/" replace /> : <Login />
               } 
             />
             <Route 
-              path="/login" 
+              path="/" 
               element={
-                isLoading ? (
-                  <div className="min-h-screen flex items-center justify-center">Loading...</div>
-                ) : isAuthenticated ? (
-                  <Navigate to="/" replace />
-                ) : (
-                  <Login />
-                )
+                <ProtectedRoute>
+                  <Index />
+                </ProtectedRoute>
               } 
             />
             <Route 
