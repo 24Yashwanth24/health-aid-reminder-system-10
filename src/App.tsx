@@ -17,6 +17,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Check if user is authenticated
   useEffect(() => {
@@ -26,13 +27,19 @@ const App = () => {
     if (checkAuth === "true") {
       setIsAuthenticated(true);
     }
+    setIsLoading(false);
   }, []);
 
   // Protected route component
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    if (isLoading) {
+      return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    }
+    
     if (!isAuthenticated) {
       return <Navigate to="/login" replace />;
     }
+    
     return <>{children}</>;
   };
 
@@ -44,12 +51,6 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route 
-              path="/login" 
-              element={
-                isAuthenticated ? <Navigate to="/" replace /> : <Login />
-              } 
-            />
-            <Route 
               path="/" 
               element={
                 <ProtectedRoute>
@@ -57,6 +58,18 @@ const App = () => {
                     <Dashboard />
                   </Layout>
                 </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/login" 
+              element={
+                isLoading ? (
+                  <div className="min-h-screen flex items-center justify-center">Loading...</div>
+                ) : isAuthenticated ? (
+                  <Navigate to="/" replace />
+                ) : (
+                  <Login />
+                )
               } 
             />
             <Route 
