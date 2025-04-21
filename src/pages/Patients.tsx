@@ -1,5 +1,4 @@
 
-// Updated Patients page with Indian patient names and payment details included
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,42 +29,96 @@ const Patients = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
-
+  
+  // Mock data with Indian names
   const [patients, setPatients] = useState<Patient[]>([
-    { id: '1', name: 'Rajesh Kumar', age: 65, condition: 'Diabetes', nextRefill: 'Apr 10, 2025', daysRemaining: 4, phone: '(923) 456-7890', paymentStatus: 'paid' },
-    { id: '2', name: 'Priya Sharma', age: 42, condition: 'Thyroid', nextRefill: 'Apr 8, 2025', daysRemaining: 2, phone: '(834) 567-8901', paymentStatus: 'unpaid' },
-    { id: '3', name: 'Vikram Singh', age: 58, condition: 'Hypertension', nextRefill: 'Apr 15, 2025', daysRemaining: 9, phone: '(745) 678-9012', paymentStatus: 'pending' },
-    { id: '4', name: 'Ananya Patel', age: 36, condition: 'Thyroid', nextRefill: 'Apr 20, 2025', daysRemaining: 14, phone: '(656) 789-0123', paymentStatus: 'paid' },
-    { id: '5', name: 'Rohit Verma', age: 71, condition: 'Diabetes', nextRefill: 'Apr 7, 2025', daysRemaining: 1, phone: '(567) 890-1234', paymentStatus: 'unpaid' },
-    { id: '6', name: 'Sunita Agarwal', age: 49, condition: 'Thyroid', nextRefill: 'Apr 18, 2025', daysRemaining: 12, phone: '(678) 901-2345', paymentStatus: 'paid' },
+    {
+      id: '1',
+      name: 'Rajesh Kumar',
+      age: 65,
+      condition: 'Diabetes',
+      nextRefill: 'Apr 10, 2025',
+      daysRemaining: 4,
+      phone: '(923) 456-7890',
+      paymentStatus: 'paid',
+    },
+    {
+      id: '2',
+      name: 'Priya Sharma',
+      age: 42,
+      condition: 'Thyroid',
+      nextRefill: 'Apr 8, 2025',
+      daysRemaining: 2,
+      phone: '(834) 567-8901',
+      paymentStatus: 'unpaid',
+    },
+    {
+      id: '3',
+      name: 'Vikram Singh',
+      age: 58,
+      condition: 'Hypertension',
+      nextRefill: 'Apr 15, 2025',
+      daysRemaining: 9,
+      phone: '(745) 678-9012',
+      paymentStatus: 'pending',
+    },
+    {
+      id: '4',
+      name: 'Ananya Patel',
+      age: 36,
+      condition: 'Thyroid',
+      nextRefill: 'Apr 20, 2025',
+      daysRemaining: 14,
+      phone: '(656) 789-0123',
+      paymentStatus: 'paid',
+    },
+    {
+      id: '5',
+      name: 'Rohit Verma',
+      age: 71,
+      condition: 'Diabetes',
+      nextRefill: 'Apr 7, 2025',
+      daysRemaining: 1,
+      phone: '(567) 890-1234',
+      paymentStatus: 'unpaid',
+    },
+    {
+      id: '6',
+      name: 'Sunita Agarwal',
+      age: 49,
+      condition: 'Thyroid',
+      nextRefill: 'Apr 18, 2025',
+      daysRemaining: 12,
+      phone: '(678) 901-2345',
+      paymentStatus: 'paid',
+    },
   ]);
 
   const handleAddPatient = (data: any) => {
     const today = new Date();
     const refillDate = format(data.nextRefillDate, 'MMM d, yyyy');
     const daysRemaining = differenceInDays(data.nextRefillDate, today);
-
+    
     const newPatient: Patient = {
       id: `${patients.length + 1}`,
       name: data.name,
       age: parseInt(data.age),
       condition: data.condition,
       nextRefill: refillDate,
-      daysRemaining,
+      daysRemaining: daysRemaining,
       phone: data.phone,
       paymentStatus: 'pending',
     };
-
+    
     setPatients([...patients, newPatient]);
     setDialogOpen(false);
   };
 
   // Filter patients based on search query and active tab
   const filteredPatients = patients.filter(patient => {
-    const matchesSearch =
-      patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      patient.condition.toLowerCase().includes(searchQuery.toLowerCase());
-
+    const matchesSearch = patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          patient.condition.toLowerCase().includes(searchQuery.toLowerCase());
+    
     if (activeTab === 'all') return matchesSearch;
     if (activeTab === 'urgent') return matchesSearch && patient.daysRemaining <= 3;
     if (activeTab === 'upcoming') return matchesSearch && patient.daysRemaining > 3 && patient.daysRemaining <= 7;
@@ -77,7 +130,9 @@ const Patients = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Patients</h1>
-          <p className="text-muted-foreground">Manage your patient records and medication schedules</p>
+          <p className="text-muted-foreground">
+            Manage your patient records and medication schedules
+          </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -103,10 +158,9 @@ const Patients = () => {
             placeholder="Search patients..."
             className="pl-8"
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-
         <Tabs defaultValue="all" className="w-full sm:w-auto" value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="all">All Patients</TabsTrigger>
@@ -120,7 +174,7 @@ const Patients = () => {
         {filteredPatients.map(patient => (
           <PatientCard key={patient.id} patient={patient} />
         ))}
-
+        
         {filteredPatients.length === 0 && (
           <div className="col-span-full flex flex-col items-center justify-center p-8 text-center">
             <p className="text-lg font-medium">No patients found</p>
@@ -133,4 +187,3 @@ const Patients = () => {
 };
 
 export default Patients;
-

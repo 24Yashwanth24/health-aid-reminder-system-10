@@ -16,11 +16,10 @@ const Dashboard = () => {
     pendingPayments: 12,
   };
 
-  // Ensure recentReminders matches the Patients/Reminders mock data
   const recentReminders = [
-    { id: '1', name: 'Rajesh Kumar', medication: 'Metformin 500mg', daysLeft: 4 },
-    { id: '2', name: 'Priya Sharma', medication: 'Levothyroxine 88mcg', daysLeft: 2 },
-    { id: '3', name: 'Vikram Singh', medication: 'Lisinopril 10mg', daysLeft: 9 },
+    { id: '1', name: 'John Smith', medication: 'Metformin 500mg', daysLeft: 2 },
+    { id: '2', name: 'Sarah Johnson', medication: 'Synthroid 88mcg', daysLeft: 3 },
+    { id: '3', name: 'Michael Brown', medication: 'Lisinopril 10mg', daysLeft: 5 },
   ];
 
   return (
@@ -29,7 +28,7 @@ const Dashboard = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back to HealthKart Express Reminder System
+            Welcome back to HealthAid Reminder System
           </p>
         </div>
       </div>

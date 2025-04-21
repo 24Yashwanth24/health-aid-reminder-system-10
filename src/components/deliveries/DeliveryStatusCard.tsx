@@ -14,7 +14,7 @@ interface DeliveryStatusCardProps {
     address: string;
     deliveryDate: string;
     status: 'pending' | 'processing' | 'in_transit' | 'delivered';
-    paymentStatus: 'paid' | 'unpaid' | 'processing';
+    paymentStatus: 'paid' | 'unpaid';
   };
   onStatusChange: (id: string, status: string) => void;
   onPaymentStatusChange: (id: string, status: string) => void;
@@ -72,13 +72,7 @@ const DeliveryStatusCard = ({ delivery, onStatusChange, onPaymentStatusChange }:
   };
 
   const togglePaymentStatus = () => {
-    // If current status is 'processing', change to 'paid', otherwise toggle between 'paid' and 'unpaid'
-    let newStatus = 'paid';
-    if (delivery.paymentStatus === 'paid') {
-      newStatus = 'unpaid';
-    } else if (delivery.paymentStatus === 'unpaid') {
-      newStatus = 'paid';
-    }
+    const newStatus = delivery.paymentStatus === 'paid' ? 'unpaid' : 'paid';
     onPaymentStatusChange(delivery.id, newStatus);
   };
 
@@ -120,16 +114,10 @@ const DeliveryStatusCard = ({ delivery, onStatusChange, onPaymentStatusChange }:
               "px-3 py-1 text-xs font-medium rounded-full",
               delivery.paymentStatus === 'paid' 
                 ? "bg-green-100 text-green-800" 
-                : delivery.paymentStatus === 'processing'
-                ? "bg-yellow-100 text-yellow-800"
                 : "bg-red-100 text-red-800"
             )}
           >
-            {delivery.paymentStatus === 'paid' 
-              ? 'Paid' 
-              : delivery.paymentStatus === 'processing'
-              ? 'Processing'
-              : 'Unpaid'}
+            {delivery.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
           </div>
         </div>
       </CardContent>
@@ -139,11 +127,7 @@ const DeliveryStatusCard = ({ delivery, onStatusChange, onPaymentStatusChange }:
           size="sm"
           onClick={togglePaymentStatus}
         >
-          {delivery.paymentStatus === 'paid' 
-            ? 'Mark as Unpaid' 
-            : delivery.paymentStatus === 'processing'
-            ? 'Mark as Paid' 
-            : 'Mark as Paid'}
+          {delivery.paymentStatus === 'paid' ? 'Mark as Unpaid' : 'Mark as Paid'}
         </Button>
         
         <Button 
