@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,9 +18,9 @@ const Dashboard = () => {
   };
 
   const recentReminders = [
-    { id: '1', name: 'John Smith', medication: 'Metformin 500mg', daysLeft: 2 },
-    { id: '2', name: 'Sarah Johnson', medication: 'Synthroid 88mcg', daysLeft: 3 },
-    { id: '3', name: 'Michael Brown', medication: 'Lisinopril 10mg', daysLeft: 5 },
+    { id: '1', name: 'Rajesh Kumar', medication: 'Metformin 500mg', daysLeft: 2 },
+    { id: '2', name: 'Priya Sharma', medication: 'Synthroid 88mcg', daysLeft: 3 },
+    { id: '3', name: 'Vikram Singh', medication: 'Lisinopril 10mg', daysLeft: 5 },
   ];
 
   return (
@@ -28,7 +29,7 @@ const Dashboard = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back to HealthAid Reminder System
+            Welcome back to HealthKart Express Reminder System
           </p>
         </div>
       </div>
