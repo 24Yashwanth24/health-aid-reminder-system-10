@@ -19,7 +19,7 @@ const Navbar = () => {
     <nav className="bg-white border-b border-gray-200 py-4 px-6 flex justify-between items-center">
       <div className="flex items-center">
         <Link to="/" className="flex items-center">
-          <span className="text-2xl font-bold text-health-600">HealthAid</span>
+          <span className="text-2xl font-bold text-health-600">HealthKart Express</span>
           <span className="ml-2 text-sm bg-health-200 text-health-700 px-2 py-1 rounded-md">Reminder System</span>
         </Link>
       </div>
