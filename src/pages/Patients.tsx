@@ -17,6 +17,7 @@ interface Patient {
   nextRefill: string;
   daysRemaining: number;
   phone: string;
+  paymentStatus?: 'paid' | 'unpaid' | 'pending';
 }
 
 const calculateDaysRemaining = (nextRefillDate: string) => {
@@ -29,61 +30,67 @@ const Patients = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   
-  // Mock data
+  // Mock data with Indian names
   const [patients, setPatients] = useState<Patient[]>([
     {
       id: '1',
-      name: 'John Smith',
+      name: 'Rajesh Kumar',
       age: 65,
       condition: 'Diabetes',
       nextRefill: 'Apr 10, 2025',
       daysRemaining: 4,
-      phone: '(123) 456-7890',
+      phone: '(923) 456-7890',
+      paymentStatus: 'paid',
     },
     {
       id: '2',
-      name: 'Sarah Johnson',
+      name: 'Priya Sharma',
       age: 42,
       condition: 'Thyroid',
       nextRefill: 'Apr 8, 2025',
       daysRemaining: 2,
-      phone: '(234) 567-8901',
+      phone: '(834) 567-8901',
+      paymentStatus: 'unpaid',
     },
     {
       id: '3',
-      name: 'Michael Brown',
+      name: 'Vikram Singh',
       age: 58,
       condition: 'Hypertension',
       nextRefill: 'Apr 15, 2025',
       daysRemaining: 9,
-      phone: '(345) 678-9012',
+      phone: '(745) 678-9012',
+      paymentStatus: 'pending',
     },
     {
       id: '4',
-      name: 'Emily Davis',
+      name: 'Ananya Patel',
       age: 36,
       condition: 'Thyroid',
       nextRefill: 'Apr 20, 2025',
       daysRemaining: 14,
-      phone: '(456) 789-0123',
+      phone: '(656) 789-0123',
+      paymentStatus: 'paid',
     },
     {
       id: '5',
-      name: 'Robert Wilson',
+      name: 'Rohit Verma',
       age: 71,
       condition: 'Diabetes',
       nextRefill: 'Apr 7, 2025',
       daysRemaining: 1,
       phone: '(567) 890-1234',
+      paymentStatus: 'unpaid',
     },
     {
       id: '6',
-      name: 'Jennifer Taylor',
+      name: 'Sunita Agarwal',
       age: 49,
       condition: 'Thyroid',
       nextRefill: 'Apr 18, 2025',
       daysRemaining: 12,
       phone: '(678) 901-2345',
+      paymentStatus: 'paid',
     },
   ]);
 
@@ -100,6 +107,7 @@ const Patients = () => {
       nextRefill: refillDate,
       daysRemaining: daysRemaining,
       phone: data.phone,
+      paymentStatus: 'pending',
     };
     
     setPatients([...patients, newPatient]);

@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Users, Pill, Truck, CreditCard, Bell } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 const Dashboard = () => {
   // Mock data

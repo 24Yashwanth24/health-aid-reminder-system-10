@@ -24,47 +24,47 @@ const Reminders = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('all');
   
-  // Mock data
+  // Mock data with Indian names
   const [reminders, setReminders] = useState<Reminder[]>([
     {
       id: '1',
-      patientName: 'John Smith',
+      patientName: 'Rajesh Kumar',
       medication: 'Metformin 500mg',
       refillDate: 'Apr 10, 2025',
       daysRemaining: 4,
       status: 'pending',
-      contactNumber: '(123) 456-7890',
+      contactNumber: '(923) 456-7890',
     },
     {
       id: '2',
-      patientName: 'Sarah Johnson',
-      medication: 'Synthroid 88mcg',
+      patientName: 'Priya Sharma',
+      medication: 'Levothyroxine 88mcg',
       refillDate: 'Apr 8, 2025',
       daysRemaining: 2,
       status: 'sent',
-      contactNumber: '(234) 567-8901',
+      contactNumber: '(834) 567-8901',
     },
     {
       id: '3',
-      patientName: 'Michael Brown',
+      patientName: 'Vikram Singh',
       medication: 'Lisinopril 10mg',
       refillDate: 'Apr 15, 2025',
       daysRemaining: 9,
       status: 'contacted',
-      contactNumber: '(345) 678-9012',
+      contactNumber: '(745) 678-9012',
     },
     {
       id: '4',
-      patientName: 'Emily Davis',
+      patientName: 'Ananya Patel',
       medication: 'Levothyroxine 50mcg',
       refillDate: 'Apr 20, 2025',
       daysRemaining: 14,
       status: 'pending',
-      contactNumber: '(456) 789-0123',
+      contactNumber: '(656) 789-0123',
     },
     {
       id: '5',
-      patientName: 'Robert Wilson',
+      patientName: 'Rohit Verma',
       medication: 'Glipizide 5mg',
       refillDate: 'Apr 7, 2025',
       daysRemaining: 1,
@@ -73,8 +73,8 @@ const Reminders = () => {
     },
     {
       id: '6',
-      patientName: 'Jennifer Taylor',
-      medication: 'Synthroid 75mcg',
+      patientName: 'Sunita Agarwal',
+      medication: 'Levothyroxine 75mcg',
       refillDate: 'Apr 18, 2025',
       daysRemaining: 12,
       status: 'completed',

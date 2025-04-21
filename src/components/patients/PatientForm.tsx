@@ -32,6 +32,7 @@ const formSchema = z.object({
   medication: z.string().min(2, { message: "Medication details are required." }),
   nextRefillDate: z.date({ required_error: "Next refill date is required." }),
   address: z.string().min(5, { message: "Address is required." }),
+  paymentStatus: z.string().optional(),
 });
 
 interface PatientFormProps {

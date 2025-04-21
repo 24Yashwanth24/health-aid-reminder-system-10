@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Phone } from 'lucide-react';
+import { Calendar, Phone, CreditCard } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -16,12 +16,26 @@ interface PatientCardProps {
     nextRefill: string;
     daysRemaining: number;
     phone: string;
+    paymentStatus?: 'paid' | 'unpaid' | 'pending';
   };
 }
 
 const PatientCard = ({ patient }: PatientCardProps) => {
   const isUrgent = patient.daysRemaining <= 3;
   const isWarning = patient.daysRemaining <= 7 && patient.daysRemaining > 3;
+
+  const getPaymentStatusClass = (status?: string) => {
+    switch (status) {
+      case 'paid':
+        return "bg-green-100 text-green-800 hover:bg-green-100";
+      case 'unpaid':
+        return "bg-red-100 text-red-800 hover:bg-red-100";
+      case 'pending':
+        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-100";
+      default:
+        return "bg-gray-100 text-gray-800 hover:bg-gray-100";
+    }
+  }
 
   return (
     <Card className="h-full">
@@ -56,6 +70,12 @@ const PatientCard = ({ patient }: PatientCardProps) => {
           <div className="flex items-center justify-between">
             <span className="flex items-center"><Phone className="h-3 w-3 mr-1" /> Contact:</span>
             <span className="font-medium text-gray-700">{patient.phone}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="flex items-center"><CreditCard className="h-3 w-3 mr-1" /> Payment:</span>
+            <Badge className={getPaymentStatusClass(patient.paymentStatus)}>
+              {patient.paymentStatus || 'N/A'}
+            </Badge>
           </div>
         </div>
       </CardContent>

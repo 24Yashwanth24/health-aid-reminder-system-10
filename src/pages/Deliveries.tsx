@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Plus, Truck } from 'lucide-react';
+import { Search, Plus, Truck, CreditCard } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import DeliveryStatusCard from '@/components/deliveries/DeliveryStatusCard';
 
@@ -15,69 +15,77 @@ interface Delivery {
   address: string;
   deliveryDate: string;
   status: 'pending' | 'processing' | 'in_transit' | 'delivered';
-  paymentStatus: 'paid' | 'unpaid';
+  paymentStatus: 'paid' | 'unpaid' | 'processing';
+  paymentAmount: number;
 }
 
 const Deliveries = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [paymentFilter, setPaymentFilter] = useState('all');
   
-  // Mock data
+  // Mock data with Indian names and payment amounts
   const [deliveries, setDeliveries] = useState<Delivery[]>([
     {
       id: '1',
-      patientName: 'John Smith',
+      patientName: 'Rajesh Kumar',
       medication: 'Metformin 500mg',
-      address: '123 Main St, Anytown, ST 12345',
+      address: '123 Gandhi Road, Mumbai, MH 400001',
       deliveryDate: 'Apr 10, 2025',
       status: 'pending',
       paymentStatus: 'unpaid',
+      paymentAmount: 850,
     },
     {
       id: '2',
-      patientName: 'Sarah Johnson',
-      medication: 'Synthroid 88mcg',
-      address: '456 Oak Ave, Anytown, ST 12346',
+      patientName: 'Priya Sharma',
+      medication: 'Levothyroxine 88mcg',
+      address: '456 Nehru Avenue, Delhi, DL 110001',
       deliveryDate: 'Apr 8, 2025',
       status: 'processing',
       paymentStatus: 'paid',
+      paymentAmount: 1200,
     },
     {
       id: '3',
-      patientName: 'Michael Brown',
+      patientName: 'Vikram Singh',
       medication: 'Lisinopril 10mg',
-      address: '789 Pine Ln, Anytown, ST 12347',
+      address: '789 Patel Street, Ahmedabad, GJ 380001',
       deliveryDate: 'Apr 9, 2025',
       status: 'in_transit',
       paymentStatus: 'paid',
+      paymentAmount: 650,
     },
     {
       id: '4',
-      patientName: 'Emily Davis',
+      patientName: 'Ananya Patel',
       medication: 'Levothyroxine 50mcg',
-      address: '101 Cedar Blvd, Anytown, ST 12348',
+      address: '101 Tagore Lane, Kolkata, WB 700001',
       deliveryDate: 'Apr 11, 2025',
       status: 'delivered',
       paymentStatus: 'paid',
+      paymentAmount: 950,
     },
     {
       id: '5',
-      patientName: 'Robert Wilson',
+      patientName: 'Rohit Verma',
       medication: 'Glipizide 5mg',
-      address: '202 Birch Ct, Anytown, ST 12349',
+      address: '202 Bose Road, Chennai, TN 600001',
       deliveryDate: 'Apr 12, 2025',
       status: 'pending',
       paymentStatus: 'unpaid',
+      paymentAmount: 780,
     },
     {
       id: '6',
-      patientName: 'Jennifer Taylor',
-      medication: 'Synthroid 75mcg',
-      address: '303 Elm Dr, Anytown, ST 12350',
+      patientName: 'Sunita Agarwal',
+      medication: 'Levothyroxine 75mcg',
+      address: '303 Shastri Nagar, Bangalore, KA 560001',
       deliveryDate: 'Apr 14, 2025',
       status: 'processing',
-      paymentStatus: 'paid',
+      paymentStatus: 'processing',
+      paymentAmount: 1100,
     },
   ]);
 
@@ -94,7 +102,7 @@ const Deliveries = () => {
 
   const handlePaymentStatusChange = (id: string, newStatus: string) => {
     setDeliveries(deliveries.map(delivery => 
-      delivery.id === id ? { ...delivery, paymentStatus: newStatus as 'paid' | 'unpaid' } : delivery
+      delivery.id === id ? { ...delivery, paymentStatus: newStatus as 'paid' | 'unpaid' | 'processing' } : delivery
     ));
     
     toast({
@@ -103,7 +111,7 @@ const Deliveries = () => {
     });
   };
 
-  // Filter deliveries based on search query and status filter
+  // Filter deliveries based on search query, status filter, and payment filter
   const filteredDeliveries = deliveries.filter(delivery => {
     const matchesSearch = 
       delivery.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -111,8 +119,9 @@ const Deliveries = () => {
       delivery.address.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || delivery.status === statusFilter;
+    const matchesPayment = paymentFilter === 'all' || delivery.paymentStatus === paymentFilter;
     
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && matchesPayment;
   });
 
   return (
@@ -156,8 +165,22 @@ const Deliveries = () => {
             </SelectContent>
           </Select>
         </div>
+
+        <div className="w-full sm:w-auto flex-1 sm:max-w-[200px]">
+          <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filter by payment" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Payments</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
+              <SelectItem value="unpaid">Unpaid</SelectItem>
+              <SelectItem value="processing">Processing</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         
-        <Button variant="outline" className="w-full sm:w-auto" onClick={() => setStatusFilter('all')}>
+        <Button variant="outline" className="w-full sm:w-auto" onClick={() => {setStatusFilter('all'); setPaymentFilter('all')}}>
           <Truck className="mr-2 h-4 w-4" />
           View All
         </Button>
