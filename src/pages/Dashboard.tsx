@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,10 +16,11 @@ const Dashboard = () => {
     pendingPayments: 12,
   };
 
+  // Ensure recentReminders matches the Patients/Reminders mock data
   const recentReminders = [
-    { id: '1', name: 'Rajesh Kumar', medication: 'Metformin 500mg', daysLeft: 2 },
-    { id: '2', name: 'Priya Sharma', medication: 'Synthroid 88mcg', daysLeft: 3 },
-    { id: '3', name: 'Vikram Singh', medication: 'Lisinopril 10mg', daysLeft: 5 },
+    { id: '1', name: 'Rajesh Kumar', medication: 'Metformin 500mg', daysLeft: 4 },
+    { id: '2', name: 'Priya Sharma', medication: 'Levothyroxine 88mcg', daysLeft: 2 },
+    { id: '3', name: 'Vikram Singh', medication: 'Lisinopril 10mg', daysLeft: 9 },
   ];
 
   return (
