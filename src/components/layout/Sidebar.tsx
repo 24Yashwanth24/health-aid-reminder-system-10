@@ -2,12 +2,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Calendar, Users, Pill, Truck, CreditCard, Home } from 'lucide-react';
+import { Calendar, Users, Truck, CreditCard, Home } from 'lucide-react';
 
 const navItems = [
   { name: 'Dashboard', icon: Home, path: '/' },
   { name: 'Patients', icon: Users, path: '/patients' },
-  { name: 'Medications', icon: Pill, path: '/medications' },
   { name: 'Reminders', icon: Calendar, path: '/reminders' },
   { name: 'Deliveries', icon: Truck, path: '/deliveries' },
   { name: 'Payments', icon: CreditCard, path: '/payments' },
