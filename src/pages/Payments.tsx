@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { CreditCard, DollarSign, Indian, Cash, CheckCircle, Search, Plus } from 'lucide-react';
+import { CreditCard, DollarSign, CheckCircle, Search, Plus } from 'lucide-react';
+import { Indian } from '@/components/icons/Indian';
+import { BadgeIndianRupee, BanknoteIcon } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 
 const Payments = () => {
@@ -18,7 +19,6 @@ const Payments = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [upiId, setUpiId] = useState('');
 
-  // Mock payment data
   const payments = [
     { id: '1', patientName: 'Rajesh Kumar', date: 'Apr 5, 2025', amount: 850, status: 'pending', method: 'card' },
     { id: '2', patientName: 'Priya Sharma', date: 'Apr 8, 2025', amount: 1200, status: 'paid', method: 'cash' },
@@ -27,7 +27,6 @@ const Payments = () => {
     { id: '5', patientName: 'Rohit Verma', date: 'Apr 15, 2025', amount: 780, status: 'paid', method: 'cash' },
   ];
 
-  // Filter payments based on search query and active tab
   const filteredPayments = payments.filter(payment => {
     const matchesSearch = payment.patientName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTab = activeTab === 'all' || payment.status === activeTab;
@@ -47,9 +46,9 @@ const Payments = () => {
       case 'card':
         return <CreditCard className="h-4 w-4" />;
       case 'cash':
-        return <Cash className="h-4 w-4" />;
+        return <BanknoteIcon className="h-4 w-4" />;
       case 'upi':
-        return <Indian className="h-4 w-4" />;
+        return <BadgeIndianRupee className="h-4 w-4" />;
       default:
         return <CreditCard className="h-4 w-4" />;
     }
@@ -152,7 +151,7 @@ const Payments = () => {
                                 className={`border rounded-md p-3 flex items-center gap-3 cursor-pointer ${paymentMethod === 'cash' ? 'border-health-500 bg-health-50' : ''}`}
                                 onClick={() => setPaymentMethod('cash')}
                               >
-                                <Cash className={`h-5 w-5 ${paymentMethod === 'cash' ? 'text-health-500' : 'text-gray-500'}`} />
+                                <BanknoteIcon className={`h-5 w-5 ${paymentMethod === 'cash' ? 'text-health-500' : 'text-gray-500'}`} />
                                 <div className="flex-1">
                                   <div className="font-medium">Cash Payment</div>
                                   <div className="text-sm text-gray-500">Mark as paid in cash</div>
@@ -164,7 +163,7 @@ const Payments = () => {
                                 className={`border rounded-md p-3 flex items-center gap-3 cursor-pointer ${paymentMethod === 'upi' ? 'border-health-500 bg-health-50' : ''}`}
                                 onClick={() => setPaymentMethod('upi')}
                               >
-                                <Indian className={`h-5 w-5 ${paymentMethod === 'upi' ? 'text-health-500' : 'text-gray-500'}`} />
+                                <BadgeIndianRupee className={`h-5 w-5 ${paymentMethod === 'upi' ? 'text-health-500' : 'text-gray-500'}`} />
                                 <div className="flex-1">
                                   <div className="font-medium">UPI Payment</div>
                                   <div className="text-sm text-gray-500">Process payment via UPI</div>
