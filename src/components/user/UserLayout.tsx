@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Bell, User, Calendar, Clock, CreditCard, LogOut } from 'lucide-react';
+import { Bell, User, Calendar, Clock, CreditCard, LogOut, Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface UserLayoutProps {
   children: React.ReactNode;
@@ -12,11 +13,13 @@ interface UserLayoutProps {
 const UserLayout = ({ children }: UserLayoutProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   
   const handleLogout = () => {
     // Clear authentication state
     localStorage.removeItem('authType');
     localStorage.removeItem('authEmail');
+    localStorage.removeItem('userName');
     
     toast({
       title: "Logged out",
@@ -27,6 +30,11 @@ const UserLayout = ({ children }: UserLayoutProps) => {
   };
   
   const userEmail = localStorage.getItem('authEmail');
+  const userName = localStorage.getItem('userName') || userEmail?.split('@')[0] || 'User';
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -44,7 +52,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
           </Button>
           
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">{userEmail || 'User'}</span>
+            <span className="text-sm text-gray-600">{userName}</span>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
               Logout
@@ -59,23 +67,55 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         <div className="w-64 h-full bg-health-100 border-r border-gray-200">
           <div className="py-6 px-4">
             <div className="space-y-1">
-              <Link to="/user/dashboard" className="flex items-center px-4 py-3 text-sm rounded-md transition-colors bg-health-500 text-white">
-                <User className="h-5 w-5 mr-3 text-white" />
+              <Link 
+                to="/user/dashboard" 
+                className={cn(
+                  "flex items-center px-4 py-3 text-sm rounded-md transition-colors",
+                  isActive("/user/dashboard") 
+                    ? "bg-health-500 text-white" 
+                    : "text-gray-700 hover:bg-health-200 hover:text-health-700"
+                )}
+              >
+                <User className={cn("h-5 w-5 mr-3", isActive("/user/dashboard") ? "text-white" : "text-health-500")} />
                 My Profile
               </Link>
               
-              <Link to="/user/medications" className="flex items-center px-4 py-3 text-sm rounded-md transition-colors text-gray-700 hover:bg-health-200 hover:text-health-700">
-                <Clock className="h-5 w-5 mr-3 text-health-500" />
+              <Link 
+                to="/user/medications" 
+                className={cn(
+                  "flex items-center px-4 py-3 text-sm rounded-md transition-colors",
+                  isActive("/user/medications") 
+                    ? "bg-health-500 text-white" 
+                    : "text-gray-700 hover:bg-health-200 hover:text-health-700"
+                )}
+              >
+                <Clock className={cn("h-5 w-5 mr-3", isActive("/user/medications") ? "text-white" : "text-health-500")} />
                 My Medications
               </Link>
               
-              <Link to="/user/reminders" className="flex items-center px-4 py-3 text-sm rounded-md transition-colors text-gray-700 hover:bg-health-200 hover:text-health-700">
-                <Calendar className="h-5 w-5 mr-3 text-health-500" />
+              <Link 
+                to="/user/reminders" 
+                className={cn(
+                  "flex items-center px-4 py-3 text-sm rounded-md transition-colors",
+                  isActive("/user/reminders") 
+                    ? "bg-health-500 text-white" 
+                    : "text-gray-700 hover:bg-health-200 hover:text-health-700"
+                )}
+              >
+                <Calendar className={cn("h-5 w-5 mr-3", isActive("/user/reminders") ? "text-white" : "text-health-500")} />
                 My Reminders
               </Link>
               
-              <Link to="/user/payments" className="flex items-center px-4 py-3 text-sm rounded-md transition-colors text-gray-700 hover:bg-health-200 hover:text-health-700">
-                <CreditCard className="h-5 w-5 mr-3 text-health-500" />
+              <Link 
+                to="/user/payments" 
+                className={cn(
+                  "flex items-center px-4 py-3 text-sm rounded-md transition-colors",
+                  isActive("/user/payments") 
+                    ? "bg-health-500 text-white" 
+                    : "text-gray-700 hover:bg-health-200 hover:text-health-700"
+                )}
+              >
+                <CreditCard className={cn("h-5 w-5 mr-3", isActive("/user/payments") ? "text-white" : "text-health-500")} />
                 My Payments
               </Link>
             </div>

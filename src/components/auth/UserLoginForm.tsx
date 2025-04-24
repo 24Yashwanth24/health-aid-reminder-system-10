@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -11,6 +11,8 @@ const UserLoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/user/dashboard';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,14 +22,21 @@ const UserLoginForm = () => {
     setTimeout(() => {
       // Simple validation for demo
       if (email === 'user@demo.com' && password === 'password') {
+        // For the demo account, set a default name if not present
+        if (!localStorage.getItem('userName')) {
+          localStorage.setItem('userName', 'Demo User');
+        }
+        
         toast({
           title: "Login successful",
           description: "Welcome to your medicine portal",
         });
+        
         // Store auth state in local storage for demo purposes
         localStorage.setItem('authType', 'user');
         localStorage.setItem('authEmail', email);
-        navigate('/user/dashboard');
+        
+        navigate(from);
       } else {
         toast({
           title: "Login failed",

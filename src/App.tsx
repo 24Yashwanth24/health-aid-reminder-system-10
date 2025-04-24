@@ -1,8 +1,9 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import Index from "./pages/Index";
 import Patients from "./pages/Patients";
@@ -24,9 +25,10 @@ const queryClient = new QueryClient();
 // Auth protection component for staff routes
 const StaffRoute = ({ children }: { children: JSX.Element }) => {
   const authType = localStorage.getItem('authType');
+  const location = useLocation();
   
   if (authType !== 'staff') {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
   
   return children;
@@ -35,28 +37,34 @@ const StaffRoute = ({ children }: { children: JSX.Element }) => {
 // Auth protection component for user routes
 const UserRoute = ({ children }: { children: JSX.Element }) => {
   const authType = localStorage.getItem('authType');
+  const location = useLocation();
   
   if (authType !== 'user') {
-    return <Navigate to="/user/login" replace />;
+    return <Navigate to="/user/login" replace state={{ from: location }} />;
   }
   
   return children;
 };
 
-const App = () => {
-  // Check if user is already logged in and redirect accordingly
-  useEffect(() => {
-    const authType = localStorage.getItem('authType');
-    
-    if (window.location.pathname === '/') {
-      if (authType === 'user') {
-        window.location.href = '/user/dashboard';
-      } else if (!authType) {
-        window.location.href = '/login';
-      }
-    }
-  }, []);
+// Root component to handle initial redirection
+const RootRedirect = () => {
+  const navigate = useNavigate();
+  const authType = localStorage.getItem('authType');
   
+  useEffect(() => {
+    if (authType === 'user') {
+      navigate('/user/dashboard');
+    } else if (authType === 'staff') {
+      navigate('/');
+    } else {
+      navigate('/user/login');
+    }
+  }, [authType, navigate]);
+  
+  return null;
+};
+
+const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -64,13 +72,16 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Root route for redirecting based on auth */}
+            <Route path="/" element={<RootRedirect />} />
+            
             {/* Authentication Routes */}
             <Route path="/login" element={<StaffLogin />} />
             <Route path="/user/login" element={<UserLogin />} />
             <Route path="/user/register" element={<UserRegister />} />
             
             {/* Staff Routes */}
-            <Route path="/" element={<StaffRoute><Index /></StaffRoute>} />
+            <Route path="/dashboard" element={<StaffRoute><Layout><Index /></Layout></StaffRoute>} />
             <Route path="/patients" element={<StaffRoute><Layout><Patients /></Layout></StaffRoute>} />
             <Route path="/reminders" element={<StaffRoute><Layout><Reminders /></Layout></StaffRoute>} />
             <Route path="/deliveries" element={<StaffRoute><Layout><Deliveries /></Layout></StaffRoute>} />

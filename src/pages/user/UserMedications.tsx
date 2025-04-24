@@ -1,13 +1,14 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import UserLayout from '@/components/user/UserLayout';
-import { Pill, Clock } from 'lucide-react';
+import AddMedicationForm from '@/components/user/AddMedicationForm';
+import { Pill, Clock, Plus } from 'lucide-react';
 
 const UserMedications = () => {
-  // Mock data for demonstration
-  const medications = [
+  const [medications, setMedications] = useState([
     {
       id: '1',
       name: 'Levothyroxine 88mcg',
@@ -24,15 +25,36 @@ const UserMedications = () => {
       status: 'active',
       daysRemaining: 21
     }
-  ];
+  ]);
+  
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  const handleAddComplete = () => {
+    setShowAddForm(false);
+    // In a real app, we would fetch updated medications or add the new one to the list
+  };
 
   return (
     <UserLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">My Medications</h1>
-          <p className="text-muted-foreground">Track your current medications and refills</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">My Medications</h1>
+            <p className="text-muted-foreground">Track your current medications and refills</p>
+          </div>
+          
+          <Button onClick={() => setShowAddForm(true)} className="flex items-center">
+            <Plus className="h-4 w-4 mr-1" />
+            Add Medication
+          </Button>
         </div>
+
+        {showAddForm && (
+          <AddMedicationForm 
+            onAddComplete={handleAddComplete}
+            onCancel={() => setShowAddForm(false)}
+          />
+        )}
 
         <div className="grid gap-4">
           {medications.map(medication => (

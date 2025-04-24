@@ -31,6 +31,9 @@ const UserRegisterForm = () => {
     
     // For demo purposes - in a real app, this would be a secure registration flow
     setTimeout(() => {
+      // Store the name in localStorage for demo purposes
+      localStorage.setItem('userName', name);
+      
       toast({
         title: "Registration successful",
         description: "Your account has been created",
