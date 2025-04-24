@@ -13,17 +13,60 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { createClient } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
 
-// Get environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Sample mock data for when Supabase is not available
+const MOCK_PAYMENTS = [
+  {
+    id: '1',
+    patient_name: 'John Doe',
+    amount: 1500,
+    status: 'pending',
+    method: 'card',
+    date: '2025-04-20',
+    created_at: '2025-04-20T10:00:00Z',
+    updated_at: '2025-04-20T10:00:00Z'
+  },
+  {
+    id: '2',
+    patient_name: 'Jane Smith',
+    amount: 2500,
+    status: 'paid',
+    method: 'cash',
+    date: '2025-04-19',
+    created_at: '2025-04-19T11:00:00Z',
+    updated_at: '2025-04-19T15:30:00Z'
+  },
+  {
+    id: '3',
+    patient_name: 'Amit Patel',
+    amount: 3000,
+    status: 'pending',
+    method: 'upi',
+    date: '2025-04-18',
+    created_at: '2025-04-18T09:00:00Z',
+    updated_at: '2025-04-18T09:00:00Z'
+  }
+];
 
-// Create Supabase client only if environment variables are available
-let supabase;
-if (supabaseUrl && supabaseAnonKey) {
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
-} else {
-  console.error('Supabase URL or Anon Key is missing. Please check your environment variables.');
-}
+// Create a function to initialize Supabase client safely
+const initSupabase = () => {
+  try {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn('Supabase credentials missing. Using mock data instead.');
+      return null;
+    }
+    
+    return createClient(supabaseUrl, supabaseAnonKey);
+  } catch (error) {
+    console.error('Failed to initialize Supabase client:', error);
+    return null;
+  }
+};
+
+// Initialize Supabase client
+const supabase = initSupabase();
 
 const Payments = () => {
   const { toast } = useToast();
@@ -34,13 +77,16 @@ const Payments = () => {
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'cash' | 'upi'>('card');
   const [upiId, setUpiId] = useState('');
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
+  const [isUsingMockData, setIsUsingMockData] = useState(!supabase);
 
   const { data: payments = [], isLoading } = useQuery({
     queryKey: ['payments'],
     queryFn: async () => {
+      // If Supabase client is not available, return mock data
       if (!supabase) {
-        console.error('Supabase client is not initialized');
-        return [];
+        console.log('Using mock payment data');
+        setIsUsingMockData(true);
+        return MOCK_PAYMENTS;
       }
       
       try {
@@ -57,16 +103,21 @@ const Payments = () => {
         return data || [];
       } catch (err) {
         console.error('Query error:', err);
-        return [];
+        setIsUsingMockData(true);
+        return MOCK_PAYMENTS; // Fallback to mock data on error
       }
     },
-    enabled: !!supabase // Only run query if supabase client is initialized
+    enabled: true // Always run the query, with or without Supabase
   });
 
   const updatePaymentMutation = useMutation({
     mutationFn: async ({ id, method }: { id: string; method: string }) => {
       if (!supabase) {
-        throw new Error('Supabase client is not initialized');
+        // Simulate API delay with mock data
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Return mock success response
+        return { success: true };
       }
       
       const { data, error } = await supabase
@@ -128,6 +179,15 @@ const Payments = () => {
           New Payment
         </Button>
       </div>
+
+      {isUsingMockData && (
+        <div className="bg-yellow-100 text-yellow-800 p-3 rounded-md flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+            <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+          </svg>
+          Using demo data. To connect to a real database, please set up your Supabase environment variables.
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="relative w-full sm:max-w-xs">
