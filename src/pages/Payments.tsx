@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -157,7 +158,14 @@ const Payments = () => {
                     </div>
                   </div>
                   {payment.status === 'pending' ? (
-                    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                    <Dialog open={dialogOpen && selectedPaymentId === payment.id} onOpenChange={(open) => {
+                      setDialogOpen(open);
+                      if (open) {
+                        setSelectedPaymentId(payment.id);
+                      } else {
+                        setSelectedPaymentId(null);
+                      }
+                    }}>
                       <DialogTrigger asChild>
                         <Button>Process Payment</Button>
                       </DialogTrigger>
@@ -241,7 +249,7 @@ const Payments = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          ))
         )}
       </div>
     </div>
