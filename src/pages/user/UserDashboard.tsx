@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,9 @@ import { Progress } from '@/components/ui/progress';
 import UserLayout from '@/components/user/UserLayout';
 
 const UserDashboard = () => {
-  // Mock user data
+  const userEmail = localStorage.getItem('authEmail');
+  const userName = localStorage.getItem('userName') || userEmail?.split('@')[0] || 'User';
+
   const userData = {
     name: 'Priya Sharma',
     phone: '(834) 567-8901',
@@ -29,7 +30,7 @@ const UserDashboard = () => {
     <UserLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Hello, {userData.name}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Hello, {userName}</h1>
           <p className="text-muted-foreground">
             Welcome to your personal medication portal
           </p>

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +15,9 @@ import StaffLogin from "./pages/auth/StaffLogin";
 import UserLogin from "./pages/auth/UserLogin";
 import UserRegister from "./pages/auth/UserRegister";
 import UserDashboard from "./pages/user/UserDashboard";
+import UserMedications from "./pages/user/UserMedications";
+import UserPayments from "./pages/user/UserPayments";
+import UserReminders from "./pages/user/UserReminders";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +78,9 @@ const App = () => {
             
             {/* User Routes */}
             <Route path="/user/dashboard" element={<UserRoute><UserDashboard /></UserRoute>} />
+            <Route path="/user/medications" element={<UserRoute><UserMedications /></UserRoute>} />
+            <Route path="/user/reminders" element={<UserRoute><UserReminders /></UserRoute>} />
+            <Route path="/user/payments" element={<UserRoute><UserPayments /></UserRoute>} />
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
