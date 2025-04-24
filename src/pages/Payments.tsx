@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,14 +13,17 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { createClient } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
 
+// Get environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
+// Create Supabase client only if environment variables are available
+let supabase;
+if (supabaseUrl && supabaseAnonKey) {
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
+} else {
   console.error('Supabase URL or Anon Key is missing. Please check your environment variables.');
 }
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const Payments = () => {
   const { toast } = useToast();
@@ -34,6 +38,11 @@ const Payments = () => {
   const { data: payments = [], isLoading } = useQuery({
     queryKey: ['payments'],
     queryFn: async () => {
+      if (!supabase) {
+        console.error('Supabase client is not initialized');
+        return [];
+      }
+      
       try {
         const { data, error } = await supabase
           .from('payments')
@@ -51,11 +60,15 @@ const Payments = () => {
         return [];
       }
     },
-    enabled: !!supabaseUrl
+    enabled: !!supabase // Only run query if supabase client is initialized
   });
 
   const updatePaymentMutation = useMutation({
     mutationFn: async ({ id, method }: { id: string; method: string }) => {
+      if (!supabase) {
+        throw new Error('Supabase client is not initialized');
+      }
+      
       const { data, error } = await supabase
         .from('payments')
         .update({ status: 'paid', method })
