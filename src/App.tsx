@@ -55,7 +55,7 @@ const RootRedirect = () => {
     if (authType === 'user') {
       navigate('/user/dashboard');
     } else if (authType === 'staff') {
-      navigate('/');
+      navigate('/dashboard');
     } else {
       navigate('/user/login');
     }
