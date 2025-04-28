@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +19,7 @@ const Payments = () => {
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [upiId, setUpiId] = useState('');
 
   const payments = [
     {
@@ -59,16 +59,22 @@ const Payments = () => {
 
   const handleProcessPayment = (payment: any) => {
     setSelectedPayment(payment);
+    setUpiId('');
     setDialogOpen(true);
   };
 
   const handleCompletePayment = () => {
+    let successMessage = `${selectedPayment.patientName}'s payment of ₹${selectedPayment.amount} marked as completed via ${paymentMethod}.`;
+    
+    if (paymentMethod === 'upi') {
+      successMessage += ` UPI ID: ${upiId}`;
+    }
+    
     toast({
       title: "Payment Processed Successfully",
-      description: `${selectedPayment.patientName}'s payment of ₹${selectedPayment.amount} marked as completed via ${paymentMethod}.`,
+      description: successMessage,
     });
     setDialogOpen(false);
-    // In a real app, this would update the database
   };
 
   const filteredPayments = payments.filter(payment => {
@@ -241,6 +247,22 @@ const Payments = () => {
                 </Label>
               </div>
             </RadioGroup>
+            
+            {paymentMethod === 'upi' && (
+              <div className="mt-4 space-y-2">
+                <Label htmlFor="upi-id">Patient's UPI ID</Label>
+                <Input 
+                  id="upi-id" 
+                  placeholder="Enter UPI ID (e.g. name@upi)"
+                  value={upiId}
+                  onChange={(e) => setUpiId(e.target.value)}
+                  className="w-full"
+                />
+                <p className="text-xs text-muted-foreground">
+                  This UPI ID will be recorded for verification purposes
+                </p>
+              </div>
+            )}
           </div>
           
           <DialogFooter>
@@ -254,6 +276,7 @@ const Payments = () => {
             <Button 
               onClick={handleCompletePayment}
               className="bg-health-600 hover:bg-health-700"
+              disabled={paymentMethod === 'upi' && !upiId.trim()}
             >
               Complete Payment
             </Button>
