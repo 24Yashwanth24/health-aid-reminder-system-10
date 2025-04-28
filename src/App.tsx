@@ -53,11 +53,11 @@ const RootRedirect = () => {
   
   useEffect(() => {
     if (authType === 'user') {
-      navigate('/user/dashboard');
+      navigate('/user/dashboard', { replace: true });
     } else if (authType === 'staff') {
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     } else {
-      navigate('/user/login');
+      navigate('/user/login', { replace: true });
     }
   }, [authType, navigate]);
   

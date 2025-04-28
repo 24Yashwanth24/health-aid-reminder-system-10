@@ -27,7 +27,7 @@ const StaffLoginForm = () => {
         // Store auth state in local storage for demo purposes
         localStorage.setItem('authType', 'staff');
         localStorage.setItem('authEmail', email);
-        navigate('/dashboard'); // Fixed navigation to dashboard instead of root path
+        navigate('/dashboard'); // Direct navigation to dashboard
       } else {
         toast({
           title: "Login failed",

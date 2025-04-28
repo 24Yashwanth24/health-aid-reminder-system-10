@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -11,8 +10,6 @@ const UserLoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = location.state?.from?.pathname || '/user/dashboard';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +33,8 @@ const UserLoginForm = () => {
         localStorage.setItem('authType', 'user');
         localStorage.setItem('authEmail', email);
         
-        navigate(from);
+        // Direct navigation to user dashboard
+        navigate('/user/dashboard', { replace: true });
       } else {
         toast({
           title: "Login failed",
