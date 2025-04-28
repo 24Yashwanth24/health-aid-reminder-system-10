@@ -46,6 +46,22 @@ const UserRoute = ({ children }: { children: JSX.Element }) => {
   return children;
 };
 
+// Authentication check for public routes
+const AuthCheck = () => {
+  const navigate = useNavigate();
+  const authType = localStorage.getItem('authType');
+  
+  useEffect(() => {
+    if (authType === 'user') {
+      navigate('/user/dashboard', { replace: true });
+    } else if (authType === 'staff') {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [authType, navigate]);
+  
+  return null;
+};
+
 // Root component to handle initial redirection
 const RootRedirect = () => {
   const navigate = useNavigate();
@@ -75,10 +91,25 @@ const App = () => {
             {/* Root route for redirecting based on auth */}
             <Route path="/" element={<RootRedirect />} />
             
-            {/* Authentication Routes */}
-            <Route path="/login" element={<StaffLogin />} />
-            <Route path="/user/login" element={<UserLogin />} />
-            <Route path="/user/register" element={<UserRegister />} />
+            {/* Authentication Routes with AuthCheck */}
+            <Route path="/login" element={
+              <>
+                <AuthCheck />
+                <StaffLogin />
+              </>
+            } />
+            <Route path="/user/login" element={
+              <>
+                <AuthCheck />
+                <UserLogin />
+              </>
+            } />
+            <Route path="/user/register" element={
+              <>
+                <AuthCheck />
+                <UserRegister />
+              </>
+            } />
             
             {/* Staff Routes */}
             <Route path="/dashboard" element={<StaffRoute><Layout><Index /></Layout></StaffRoute>} />
@@ -93,8 +124,8 @@ const App = () => {
             <Route path="/user/reminders" element={<UserRoute><UserReminders /></UserRoute>} />
             <Route path="/user/payments" element={<UserRoute><UserPayments /></UserRoute>} />
             
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
+            {/* Catch-all route - redirect to login based on preferred portal */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
