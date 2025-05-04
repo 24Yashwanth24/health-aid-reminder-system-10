@@ -19,7 +19,7 @@ const StaffLoginForm = () => {
     // For demo purposes - in a real app, this would be a secure authentication flow
     setTimeout(() => {
       // Simple validation for demo
-      if (email === 'gopalakrishna123@gmail.com' && password === 'password@123') {
+      if (email === 'gk123@gmail.com' && password === 'password@123') {
         toast({
           title: "Login successful",
           description: "Welcome to the staff portal",
