@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,8 +21,7 @@ const Payments = () => {
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [upiId, setUpiId] = useState('');
-
-  const payments = [
+  const [payments, setPayments] = useState([
     {
       id: '1',
       patientName: 'Rajesh Kumar',
@@ -55,7 +55,7 @@ const Payments = () => {
       dueDate: '2025-05-08',
       refillDays: 3
     }
-  ];
+  ]);
 
   const handleProcessPayment = (payment: any) => {
     setSelectedPayment(payment);
@@ -70,6 +70,19 @@ const Payments = () => {
       successMessage += ` UPI ID: ${upiId}`;
     }
     
+    // Update the payment status in the payments array
+    setPayments(prevPayments => 
+      prevPayments.map(payment => 
+        payment.id === selectedPayment.id 
+          ? { 
+              ...payment, 
+              status: 'completed', 
+              paymentMethod: paymentMethod 
+            } 
+          : payment
+      )
+    );
+    
     toast({
       title: "Payment Processed Successfully",
       description: successMessage,
@@ -77,6 +90,7 @@ const Payments = () => {
     setDialogOpen(false);
   };
 
+  // Filter payments based on search query and active tab
   const filteredPayments = payments.filter(payment => {
     const matchesSearch = 
       payment.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||

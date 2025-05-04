@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -76,10 +75,19 @@ const DeliveryStatusCard = ({ delivery, onStatusChange, onPaymentStatusChange }:
     let newStatus = 'paid';
     if (delivery.paymentStatus === 'paid') {
       newStatus = 'unpaid';
-    } else if (delivery.paymentStatus === 'unpaid') {
+    } else if (delivery.paymentStatus === 'unpaid' || delivery.paymentStatus === 'processing') {
       newStatus = 'paid';
     }
     onPaymentStatusChange(delivery.id, newStatus);
+  };
+
+  const getButtonText = () => {
+    if (delivery.paymentStatus === 'paid') {
+      return 'Mark as Unpaid';
+    } else if (delivery.paymentStatus === 'processing' || delivery.paymentStatus === 'unpaid') {
+      return 'Mark as Paid';
+    }
+    return 'Update Payment';
   };
 
   return (
@@ -139,11 +147,7 @@ const DeliveryStatusCard = ({ delivery, onStatusChange, onPaymentStatusChange }:
           size="sm"
           onClick={togglePaymentStatus}
         >
-          {delivery.paymentStatus === 'paid' 
-            ? 'Mark as Unpaid' 
-            : delivery.paymentStatus === 'processing'
-            ? 'Mark as Paid' 
-            : 'Mark as Paid'}
+          {getButtonText()}
         </Button>
         
         <Button 
