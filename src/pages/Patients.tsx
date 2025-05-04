@@ -60,6 +60,10 @@ const Patients = () => {
     setDialogOpen(false);
   };
 
+  const handleDeletePatient = (id: string) => {
+    setPatients(patients.filter(patient => patient.id !== id));
+  };
+
   // Filter patients based on search query and active tab
   const filteredPatients = patients.filter(patient => {
     const matchesSearch =
@@ -118,7 +122,11 @@ const Patients = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredPatients.map(patient => (
-          <PatientCard key={patient.id} patient={patient} />
+          <PatientCard 
+            key={patient.id} 
+            patient={patient} 
+            onDelete={handleDeletePatient} 
+          />
         ))}
 
         {filteredPatients.length === 0 && (
@@ -133,4 +141,3 @@ const Patients = () => {
 };
 
 export default Patients;
-

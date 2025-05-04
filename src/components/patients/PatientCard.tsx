@@ -3,8 +3,9 @@ import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Phone, CreditCard } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Calendar, Phone, CreditCard, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { toast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 
 interface PatientCardProps {
@@ -18,9 +19,10 @@ interface PatientCardProps {
     phone: string;
     paymentStatus?: 'paid' | 'unpaid' | 'pending';
   };
+  onDelete?: (id: string) => void;
 }
 
-const PatientCard = ({ patient }: PatientCardProps) => {
+const PatientCard = ({ patient, onDelete }: PatientCardProps) => {
   const isUrgent = patient.daysRemaining <= 3;
   const isWarning = patient.daysRemaining <= 7 && patient.daysRemaining > 3;
 
@@ -36,6 +38,16 @@ const PatientCard = ({ patient }: PatientCardProps) => {
         return "bg-gray-100 text-gray-800 hover:bg-gray-100";
     }
   }
+
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(patient.id);
+      toast({
+        title: "Patient deleted",
+        description: `${patient.name} has been removed from your patients list`,
+      });
+    }
+  };
 
   return (
     <Card className="h-full">
@@ -87,9 +99,29 @@ const PatientCard = ({ patient }: PatientCardProps) => {
           )}>
             {patient.daysRemaining} days remaining
           </div>
-          <Link to={`/patients/${patient.id}`}>
-            <Button variant="outline" size="sm">View Details</Button>
-          </Link>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete {patient.name}'s patient record and remove them from the system.
+                  This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </CardFooter>
     </Card>
