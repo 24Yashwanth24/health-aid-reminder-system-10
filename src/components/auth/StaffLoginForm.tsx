@@ -116,10 +116,6 @@ const StaffLoginForm = () => {
           ) : 'Sign in'}
         </Button>
       </div>
-      
-      <div className="text-center text-xs text-gray-500">
-        <p>Demo credentials: gk123@gmail.com / password@123</p>
-      </div>
     </form>
   );
 };

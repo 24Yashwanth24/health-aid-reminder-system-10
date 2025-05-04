@@ -73,7 +73,7 @@ const RootRedirect = () => {
     } else if (authType === 'staff') {
       navigate('/dashboard', { replace: true });
     } else {
-      navigate('/user/login', { replace: true });
+      navigate('/login', { replace: true }); // Changed from '/user/login' to '/login'
     }
   }, [authType, navigate]);
   
