@@ -9,6 +9,7 @@ const StaffLogin = () => {
       title="Staff Login" 
       subtitle="Sign in to access the staff portal"
       type="staff"
+      quote="Your medicine, my responsibility"
     >
       <StaffLoginForm />
     </AuthLayout>

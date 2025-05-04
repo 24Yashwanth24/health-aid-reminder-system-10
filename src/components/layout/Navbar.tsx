@@ -1,18 +1,33 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Bell } from 'lucide-react';
+import { Bell, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Navbar = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const handleNotificationClick = () => {
     toast({
       title: "Notifications",
       description: "You have 3 pending medication reminders to send",
     });
+  };
+
+  const handleLogout = () => {
+    // Clear authentication state
+    localStorage.removeItem('authType');
+    localStorage.removeItem('authEmail');
+    
+    toast({
+      title: "Logged out",
+      description: "You have been logged out successfully",
+    });
+    
+    // Redirect to staff login page
+    navigate('/login');
   };
 
   return (
@@ -34,6 +49,17 @@ const Navbar = () => {
           <Bell className="h-5 w-5" />
           <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white">3</span>
         </Button>
+        
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleLogout}
+          className="flex items-center space-x-2"
+        >
+          <LogOut className="h-4 w-4" />
+          <span>Logout</span>
+        </Button>
+        
         <span className="text-sm text-gray-600">Staff Portal</span>
       </div>
     </nav>

@@ -9,6 +9,7 @@ const UserLogin = () => {
       title="User Login" 
       subtitle="Sign in to access your medication portal"
       type="user"
+      quote="Your medicine, my responsibility"
     >
       <UserLoginForm />
     </AuthLayout>

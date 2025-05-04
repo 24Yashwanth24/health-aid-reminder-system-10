@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { Heart, Mail, Lock } from 'lucide-react';
 
 const StaffLoginForm = () => {
   const [email, setEmail] = useState('');
@@ -31,7 +32,7 @@ const StaffLoginForm = () => {
       } else {
         toast({
           title: "Login failed",
-          description: "Invalid credentials. Try staff@demo.com / password",
+          description: "Invalid credentials. Try gk123@gmail.com / password@123",
           variant: "destructive",
         });
       }
@@ -40,10 +41,15 @@ const StaffLoginForm = () => {
   };
 
   return (
-    <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-      <div className="rounded-md shadow-sm -space-y-px">
-        <div>
-          <label htmlFor="email-address" className="sr-only">Email address</label>
+    <form className="space-y-6" onSubmit={handleSubmit}>
+      <div className="text-center mb-6">
+        <Heart className="mx-auto h-12 w-12 text-red-500 animate-pulse" />
+        <p className="text-sm text-health-600 mt-2">Staff Healthcare Portal</p>
+      </div>
+      
+      <div className="space-y-4">
+        <div className="relative">
+          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-health-500 h-4 w-4" />
           <Input
             id="email-address"
             name="email"
@@ -53,11 +59,12 @@ const StaffLoginForm = () => {
             placeholder="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-t-md"
+            className="pl-10 border-health-200 focus:border-health-500 focus:ring-health-500"
           />
         </div>
-        <div>
-          <label htmlFor="password" className="sr-only">Password</label>
+        
+        <div className="relative">
+          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-health-500 h-4 w-4" />
           <Input
             id="password"
             name="password"
@@ -67,7 +74,7 @@ const StaffLoginForm = () => {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded-b-md"
+            className="pl-10 border-health-200 focus:border-health-500 focus:ring-health-500"
           />
         </div>
       </div>
@@ -95,14 +102,23 @@ const StaffLoginForm = () => {
       <div>
         <Button
           type="submit"
-          className="w-full"
+          className="w-full bg-health-600 hover:bg-health-700"
           disabled={isLoading}
         >
-          {isLoading ? 'Signing in...' : 'Sign in'}
+          {isLoading ? (
+            <div className="flex items-center justify-center">
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Signing in...
+            </div>
+          ) : 'Sign in'}
         </Button>
       </div>
       
-      <div className="text-center text-sm">
+      <div className="text-center text-xs text-gray-500">
+        <p>Demo credentials: gk123@gmail.com / password@123</p>
       </div>
     </form>
   );
