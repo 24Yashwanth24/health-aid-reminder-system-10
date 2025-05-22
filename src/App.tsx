@@ -13,6 +13,7 @@ import Payments from "./pages/Payments";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/layout/Layout";
 import StaffLogin from "./pages/auth/StaffLogin";
+import StaffRegister from "./pages/auth/StaffRegister";
 import UserLogin from "./pages/auth/UserLogin";
 import UserRegister from "./pages/auth/UserRegister";
 import UserDashboard from "./pages/user/UserDashboard";
@@ -96,6 +97,12 @@ const App = () => {
               <>
                 <AuthCheck />
                 <StaffLogin />
+              </>
+            } />
+            <Route path="/staff/register" element={
+              <>
+                <AuthCheck />
+                <StaffRegister />
               </>
             } />
             <Route path="/user/login" element={

@@ -19,36 +19,47 @@ const StaffLoginForm = () => {
     setIsLoading(true);
     
     try {
+      // Sign in with Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
       if (error) {
-        toast({
-          title: "Login failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
+        throw error;
       }
 
-      // Store auth state in local storage
-      localStorage.setItem('authType', 'staff');
-      localStorage.setItem('authEmail', email);
-      
-      toast({
-        title: "Login successful",
-        description: "Welcome to the staff portal",
-      });
-      
-      navigate('/dashboard'); // Direct navigation to dashboard
-    } catch (error) {
+      if (data.user) {
+        // Check if the user exists in the staff table
+        const { data: staffData, error: staffError } = await supabase
+          .from('staff')
+          .select('*')
+          .eq('user_id', data.user.id)
+          .single();
+
+        if (staffError) {
+          // If there's an error or no staff record found, sign out
+          await supabase.auth.signOut();
+          throw new Error('Not authorized as staff. Please use a valid staff account.');
+        }
+
+        // Store auth state in local storage
+        localStorage.setItem('authType', 'staff');
+        localStorage.setItem('authEmail', email);
+        localStorage.setItem('staffName', staffData.name);
+        
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${staffData.name}!`,
+        });
+        
+        navigate('/dashboard'); // Direct navigation to dashboard
+      }
+    } catch (error: any) {
       console.error('Login error:', error);
       toast({
         title: "Login failed",
-        description: "An unexpected error occurred",
+        description: error.message || "Invalid credentials. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -132,6 +143,15 @@ const StaffLoginForm = () => {
             </div>
           ) : 'Sign in'}
         </Button>
+      </div>
+      
+      <div className="text-center mt-4">
+        <p className="text-sm text-gray-600">
+          Don't have a staff account?{" "}
+          <a href="/staff/register" className="font-medium text-health-600 hover:text-health-500">
+            Register here
+          </a>
+        </p>
       </div>
     </form>
   );
