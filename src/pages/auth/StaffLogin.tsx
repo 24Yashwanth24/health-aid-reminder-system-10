@@ -17,15 +17,6 @@ const StaffLogin = () => {
         
         <StaffLoginForm />
         
-        <div className="flex items-center justify-center mt-4">
-          <p className="text-sm text-gray-600">
-            New staff member? {" "}
-            <Link to="/staff/register" className="font-semibold text-health-600 hover:text-health-500">
-              Register for Staff Portal
-            </Link>
-          </p>
-        </div>
-        
         <div className="flex items-center justify-center mt-2">
           <p className="text-sm text-gray-600">
             Patient? {" "}
