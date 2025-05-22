@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Heart, Mail, Lock } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const StaffLoginForm = () => {
   const [email, setEmail] = useState('');
@@ -13,31 +14,46 @@ const StaffLoginForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // For demo purposes - in a real app, this would be a secure authentication flow
-    setTimeout(() => {
-      // Simple validation for demo
-      if (email === 'gk123@gmail.com' && password === 'password@123') {
-        toast({
-          title: "Login successful",
-          description: "Welcome to the staff portal",
-        });
-        // Store auth state in local storage for demo purposes
-        localStorage.setItem('authType', 'staff');
-        localStorage.setItem('authEmail', email);
-        navigate('/dashboard'); // Direct navigation to dashboard
-      } else {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
         toast({
           title: "Login failed",
-          description: "Invalid credentials. Try gk123@gmail.com / password@123",
+          description: error.message,
           variant: "destructive",
         });
+        setIsLoading(false);
+        return;
       }
+
+      // Store auth state in local storage
+      localStorage.setItem('authType', 'staff');
+      localStorage.setItem('authEmail', email);
+      
+      toast({
+        title: "Login successful",
+        description: "Welcome to the staff portal",
+      });
+      
+      navigate('/dashboard'); // Direct navigation to dashboard
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        title: "Login failed",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -45,6 +61,7 @@ const StaffLoginForm = () => {
       <div className="text-center mb-6">
         <Heart className="mx-auto h-12 w-12 text-red-500 animate-pulse" />
         <p className="text-sm text-health-600 mt-2">Staff Healthcare Portal</p>
+        <h2 className="mt-2 text-xl font-semibold text-gray-800">"Your medicine, my responsibility"</h2>
       </div>
       
       <div className="space-y-4">

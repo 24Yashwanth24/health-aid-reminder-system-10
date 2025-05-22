@@ -1,44 +1,129 @@
-
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { Calendar, Users, Truck, CreditCard, Home } from 'lucide-react';
-
-const navItems = [
-  { name: 'Dashboard', icon: Home, path: '/' },
-  { name: 'Patients', icon: Users, path: '/patients' },
-  { name: 'Reminders', icon: Calendar, path: '/reminders' },
-  { name: 'Deliveries', icon: Truck, path: '/deliveries' },
-  { name: 'Payments', icon: CreditCard, path: '/payments' },
-];
+import {
+  Home,
+  LayoutDashboard,
+  User,
+  Calendar,
+  Bell,
+  Truck,
+  CreditCard,
+  Settings,
+  HelpCircle,
+} from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Menu } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import LogoutButton from '@/components/auth/LogoutButton';
 
 const Sidebar = () => {
-  const location = useLocation();
-
   return (
-    <div className="w-64 h-full bg-health-100 border-r border-gray-200">
-      <div className="py-6 px-4">
-        <div className="space-y-1">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            const Icon = item.icon;
-            
-            return (
-              <Link
-                key={item.name}
-                to={item.path}
-                className={cn(
-                  "flex items-center px-4 py-3 text-sm rounded-md transition-colors",
-                  isActive
-                    ? "bg-health-500 text-white"
-                    : "text-gray-700 hover:bg-health-200 hover:text-health-700"
-                )}
-              >
-                <Icon className={cn("h-5 w-5 mr-3", isActive ? "text-white" : "text-health-500")} />
-                {item.name}
-              </Link>
-            );
-          })}
+    <div className="hidden border-r bg-gray-100/40 dark:bg-secondary/80 md:block">
+      <div className="flex min-h-screen flex-col space-y-2 py-4">
+        <div className="px-3 py-2">
+          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+            Pharmacy Admin
+          </h2>
+          <div className="space-y-1">
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) =>
+                `flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-50 ${isActive
+                  ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50'
+                  : 'text-gray-500 dark:text-gray-400'
+                }`
+              }
+            >
+              <Home className="mr-2 h-4 w-4" />
+              Dashboard
+            </NavLink>
+            <NavLink
+              to="/patients"
+              className={({ isActive }) =>
+                `flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-50 ${isActive
+                  ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50'
+                  : 'text-gray-500 dark:text-gray-400'
+                }`
+              }
+            >
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              Patients
+            </NavLink>
+            <NavLink
+              to="/reminders"
+              className={({ isActive }) =>
+                `flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-50 ${isActive
+                  ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50'
+                  : 'text-gray-500 dark:text-gray-400'
+                }`
+              }
+            >
+              <Bell className="mr-2 h-4 w-4" />
+              Reminders
+            </NavLink>
+            <NavLink
+              to="/deliveries"
+              className={({ isActive }) =>
+                `flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-50 ${isActive
+                  ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50'
+                  : 'text-gray-500 dark:text-gray-400'
+                }`
+              }
+            >
+              <Truck className="mr-2 h-4 w-4" />
+              Deliveries
+            </NavLink>
+            <NavLink
+              to="/payments"
+              className={({ isActive }) =>
+                `flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-50 ${isActive
+                  ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50'
+                  : 'text-gray-500 dark:text-gray-400'
+                }`
+              }
+            >
+              <CreditCard className="mr-2 h-4 w-4" />
+              Payments
+            </NavLink>
+          </div>
+        </div>
+        <div className="mt-auto px-3 py-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex h-8 w-full items-center justify-center px-2">
+                <Avatar className="mr-2 h-5 w-5">
+                  <AvatarImage src="https://github.com/shadcn.png" alt="Avatar" />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-medium">My Account</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" forceMount>
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <HelpCircle className="mr-2 h-4 w-4" />
+                Support
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <LogoutButton />
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>

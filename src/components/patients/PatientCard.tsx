@@ -18,6 +18,9 @@ interface PatientCardProps {
     daysRemaining: number;
     phone: string;
     paymentStatus?: 'paid' | 'unpaid' | 'pending';
+    gender?: string;
+    medication?: string;
+    address?: string;
   };
   onDelete?: (id: string) => void;
 }

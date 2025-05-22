@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -7,6 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Bell } from 'lucide-react';
 import ReminderList from '@/components/reminders/ReminderList';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { format, differenceInDays } from 'date-fns';
+import LogoutButton from '@/components/auth/LogoutButton';
 
 interface Reminder {
   id: string;
@@ -23,69 +26,107 @@ const Reminders = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('all');
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Mock data with Indian names
-  const [reminders, setReminders] = useState<Reminder[]>([
-    {
-      id: '1',
-      patientName: 'Rajesh Kumar',
-      medication: 'Metformin 500mg',
-      refillDate: 'Apr 10, 2025',
-      daysRemaining: 4,
-      status: 'pending',
-      contactNumber: '(923) 456-7890',
-    },
-    {
-      id: '2',
-      patientName: 'Priya Sharma',
-      medication: 'Levothyroxine 88mcg',
-      refillDate: 'Apr 8, 2025',
-      daysRemaining: 2,
-      status: 'sent',
-      contactNumber: '(834) 567-8901',
-    },
-    {
-      id: '3',
-      patientName: 'Vikram Singh',
-      medication: 'Lisinopril 10mg',
-      refillDate: 'Apr 15, 2025',
-      daysRemaining: 9,
-      status: 'contacted',
-      contactNumber: '(745) 678-9012',
-    },
-    {
-      id: '4',
-      patientName: 'Ananya Patel',
-      medication: 'Levothyroxine 50mcg',
-      refillDate: 'Apr 20, 2025',
-      daysRemaining: 14,
-      status: 'pending',
-      contactNumber: '(656) 789-0123',
-    },
-    {
-      id: '5',
-      patientName: 'Rohit Verma',
-      medication: 'Glipizide 5mg',
-      refillDate: 'Apr 7, 2025',
-      daysRemaining: 1,
-      status: 'pending',
-      contactNumber: '(567) 890-1234',
-    },
-    {
-      id: '6',
-      patientName: 'Sunita Agarwal',
-      medication: 'Levothyroxine 75mcg',
-      refillDate: 'Apr 18, 2025',
-      daysRemaining: 12,
-      status: 'completed',
-      contactNumber: '(678) 901-2345',
-    },
-  ]);
+  const fetchReminders = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch patients data from Supabase
+      const { data, error } = await supabase
+        .from('patients')
+        .select('*');
 
-  const handleStatusChange = (id: string, newStatus: Reminder['status']) => {
+      if (error) {
+        throw error;
+      }
+
+      if (data) {
+        // Transform patient data into reminders
+        const reminderData = data.map(patient => {
+          const refillDate = format(new Date(patient.next_refill_date), 'MMM d, yyyy');
+          const daysRemaining = differenceInDays(new Date(patient.next_refill_date), new Date());
+          
+          // Determine status based on days remaining
+          let status: 'pending' | 'sent' | 'contacted' | 'completed' = 'pending';
+          if (daysRemaining <= 0) {
+            status = 'completed';
+          } else if (daysRemaining <= 3) {
+            status = 'sent';
+          }
+
+          return {
+            id: patient.id,
+            patientName: patient.name,
+            medication: patient.medication || 'Not specified',
+            refillDate: refillDate,
+            daysRemaining: daysRemaining,
+            status: status,
+            contactNumber: patient.phone || 'Not provided'
+          };
+        });
+
+        setReminders(reminderData);
+      }
+    } catch (error) {
+      console.error('Error fetching reminders:', error);
+      toast({
+        title: "Error",
+        description: "Could not fetch reminders data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReminders();
+    
+    // Set up real-time subscription for changes to the patients table
+    const subscription = supabase
+      .channel('patients-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'patients'
+        },
+        (payload) => {
+          console.log('Change received!', payload);
+          fetchReminders();
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleStatusChange = async (id: string, newStatus: Reminder['status']) => {
+    // Find the reminder to update
+    const reminderToUpdate = reminders.find(r => r.id === id);
+    
+    if (!reminderToUpdate) {
+      toast({
+        title: "Error",
+        description: "Reminder not found",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Update the local state
     setReminders(reminders.map(reminder => 
       reminder.id === id ? { ...reminder, status: newStatus } : reminder
     ));
+    
+    toast({
+      title: "Status Updated",
+      description: `Reminder status updated to ${newStatus}`,
+    });
   };
 
   const handleSendAllReminders = () => {
@@ -138,10 +179,13 @@ const Reminders = () => {
             Schedule and send medication refill reminders to patients
           </p>
         </div>
-        <Button onClick={handleSendAllReminders}>
-          <Bell className="mr-2 h-4 w-4" />
-          Send All Urgent Reminders
-        </Button>
+        <div className="flex items-center gap-4">
+          <LogoutButton />
+          <Button onClick={handleSendAllReminders}>
+            <Bell className="mr-2 h-4 w-4" />
+            Send All Urgent Reminders
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -181,16 +225,24 @@ const Reminders = () => {
         </Tabs>
       </div>
 
-      <ReminderList 
-        reminders={filteredReminders} 
-        onStatusChange={handleStatusChange} 
-      />
-      
-      {filteredReminders.length === 0 && (
-        <div className="flex flex-col items-center justify-center p-8 text-center">
-          <p className="text-lg font-medium">No reminders found</p>
-          <p className="text-muted-foreground">Try adjusting your search or filter criteria</p>
+      {isLoading ? (
+        <div className="flex justify-center items-center p-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-health-600"></div>
         </div>
+      ) : (
+        <>
+          <ReminderList 
+            reminders={filteredReminders} 
+            onStatusChange={handleStatusChange} 
+          />
+          
+          {filteredReminders.length === 0 && !isLoading && (
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+              <p className="text-lg font-medium">No reminders found</p>
+              <p className="text-muted-foreground">Try adjusting your search or filter criteria</p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -59,10 +59,6 @@ const PatientForm = ({ onSubmit, defaultValues, isEditing = false }: PatientForm
 
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
     onSubmit(data);
-    toast({
-      title: isEditing ? "Patient Updated" : "Patient Added",
-      description: `${data.name} has been ${isEditing ? "updated" : "added"} successfully.`,
-    });
   };
 
   return (

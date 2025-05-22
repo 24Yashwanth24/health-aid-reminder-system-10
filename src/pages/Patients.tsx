@@ -1,6 +1,5 @@
 
-// Updated Patients page with Indian patient names and payment details included
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -9,59 +8,175 @@ import { Search, Plus } from 'lucide-react';
 import PatientCard from '@/components/patients/PatientCard';
 import PatientForm from '@/components/patients/PatientForm';
 import { differenceInDays, format, parse } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import LogoutButton from '@/components/auth/LogoutButton';
 
 interface Patient {
   id: string;
   name: string;
   age: number;
   condition: string;
+  next_refill_date: string;
   nextRefill: string;
   daysRemaining: number;
   phone: string;
   paymentStatus?: 'paid' | 'unpaid' | 'pending';
+  gender?: string;
+  medication?: string;
+  address?: string;
 }
-
-const calculateDaysRemaining = (nextRefillDate: string) => {
-  const refillDate = parse(nextRefillDate, 'MMM d, yyyy', new Date());
-  return differenceInDays(refillDate, new Date());
-};
 
 const Patients = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
-  const [patients, setPatients] = useState<Patient[]>([
-    { id: '1', name: 'Rajesh Kumar', age: 65, condition: 'Diabetes', nextRefill: 'Apr 10, 2025', daysRemaining: 4, phone: '(923) 456-7890', paymentStatus: 'paid' },
-    { id: '2', name: 'Priya Sharma', age: 42, condition: 'Thyroid', nextRefill: 'Apr 8, 2025', daysRemaining: 2, phone: '(834) 567-8901', paymentStatus: 'unpaid' },
-    { id: '3', name: 'Vikram Singh', age: 58, condition: 'Hypertension', nextRefill: 'Apr 15, 2025', daysRemaining: 9, phone: '(745) 678-9012', paymentStatus: 'pending' },
-    { id: '4', name: 'Ananya Patel', age: 36, condition: 'Thyroid', nextRefill: 'Apr 20, 2025', daysRemaining: 14, phone: '(656) 789-0123', paymentStatus: 'paid' },
-    { id: '5', name: 'Rohit Verma', age: 71, condition: 'Diabetes', nextRefill: 'Apr 7, 2025', daysRemaining: 1, phone: '(567) 890-1234', paymentStatus: 'unpaid' },
-    { id: '6', name: 'Sunita Agarwal', age: 49, condition: 'Thyroid', nextRefill: 'Apr 18, 2025', daysRemaining: 12, phone: '(678) 901-2345', paymentStatus: 'paid' },
-  ]);
+  const fetchPatients = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('patients')
+        .select('*');
 
-  const handleAddPatient = (data: any) => {
-    const today = new Date();
-    const refillDate = format(data.nextRefillDate, 'MMM d, yyyy');
-    const daysRemaining = differenceInDays(data.nextRefillDate, today);
+      if (error) {
+        throw error;
+      }
 
-    const newPatient: Patient = {
-      id: `${patients.length + 1}`,
-      name: data.name,
-      age: parseInt(data.age),
-      condition: data.condition,
-      nextRefill: refillDate,
-      daysRemaining,
-      phone: data.phone,
-      paymentStatus: 'pending',
-    };
+      if (data) {
+        // Transform the data to match the expected Patient interface
+        const formattedPatients = data.map(patient => {
+          const nextRefill = format(new Date(patient.next_refill_date), 'MMM d, yyyy');
+          const daysRemaining = differenceInDays(new Date(patient.next_refill_date), new Date());
 
-    setPatients([...patients, newPatient]);
-    setDialogOpen(false);
+          return {
+            id: patient.id,
+            name: patient.name,
+            age: patient.age,
+            condition: patient.condition || '',
+            next_refill_date: patient.next_refill_date,
+            nextRefill: nextRefill,
+            daysRemaining: daysRemaining,
+            phone: patient.phone || '',
+            paymentStatus: (patient.payment_status as 'paid' | 'unpaid' | 'pending') || 'pending',
+            gender: patient.gender || '',
+            medication: patient.medication || '',
+            address: patient.address || '',
+          };
+        });
+
+        setPatients(formattedPatients);
+      }
+    } catch (error) {
+      console.error('Error fetching patients:', error);
+      toast({
+        title: "Error",
+        description: "Could not fetch patients data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDeletePatient = (id: string) => {
-    setPatients(patients.filter(patient => patient.id !== id));
+  useEffect(() => {
+    fetchPatients();
+    
+    // Set up real-time subscription for changes to the patients table
+    const subscription = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'patients'
+        },
+        (payload) => {
+          console.log('Change received!', payload);
+          fetchPatients();
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const calculateDaysRemaining = (nextRefillDate: string) => {
+    const refillDate = parse(nextRefillDate, 'MMM d, yyyy', new Date());
+    return differenceInDays(refillDate, new Date());
+  };
+
+  const handleAddPatient = async (data: any) => {
+    try {
+      const today = new Date();
+      const next_refill_date = format(data.nextRefillDate, 'yyyy-MM-dd');
+
+      const newPatient = {
+        name: data.name,
+        age: parseInt(data.age),
+        gender: data.gender,
+        condition: data.condition,
+        medication: data.medication,
+        next_refill_date: next_refill_date,
+        phone: data.phone,
+        address: data.address,
+        payment_status: 'pending',
+        user_id: (await supabase.auth.getUser()).data.user?.id,
+      };
+
+      const { error } = await supabase.from('patients').insert(newPatient);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: "Patient added successfully",
+      });
+
+      setDialogOpen(false);
+    } catch (error) {
+      console.error('Error adding patient:', error);
+      toast({
+        title: "Error",
+        description: "Could not add patient",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeletePatient = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('patients')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: "Patient deleted successfully",
+      });
+      
+      // We'll rely on the subscription to update the list
+    } catch (error) {
+      console.error('Error deleting patient:', error);
+      toast({
+        title: "Error",
+        description: "Could not delete patient",
+        variant: "destructive",
+      });
+    }
   };
 
   // Filter patients based on search query and active tab
@@ -83,20 +198,23 @@ const Patients = () => {
           <h1 className="text-2xl font-bold tracking-tight">Patients</h1>
           <p className="text-muted-foreground">Manage your patient records and medication schedules</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Patient
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[625px]">
-            <DialogHeader>
-              <DialogTitle>Add New Patient</DialogTitle>
-            </DialogHeader>
-            <PatientForm onSubmit={handleAddPatient} />
-          </DialogContent>
-        </Dialog>
+        <div className="flex items-center gap-4">
+          <LogoutButton />
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Patient
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[625px]">
+              <DialogHeader>
+                <DialogTitle>Add New Patient</DialogTitle>
+              </DialogHeader>
+              <PatientForm onSubmit={handleAddPatient} />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -120,22 +238,28 @@ const Patients = () => {
         </Tabs>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPatients.map(patient => (
-          <PatientCard 
-            key={patient.id} 
-            patient={patient} 
-            onDelete={handleDeletePatient} 
-          />
-        ))}
+      {isLoading ? (
+        <div className="flex justify-center items-center p-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-health-600"></div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredPatients.map(patient => (
+            <PatientCard 
+              key={patient.id} 
+              patient={patient} 
+              onDelete={handleDeletePatient} 
+            />
+          ))}
 
-        {filteredPatients.length === 0 && (
-          <div className="col-span-full flex flex-col items-center justify-center p-8 text-center">
-            <p className="text-lg font-medium">No patients found</p>
-            <p className="text-muted-foreground">Try adjusting your search or filter criteria</p>
-          </div>
-        )}
-      </div>
+          {filteredPatients.length === 0 && !isLoading && (
+            <div className="col-span-full flex flex-col items-center justify-center p-8 text-center">
+              <p className="text-lg font-medium">No patients found</p>
+              <p className="text-muted-foreground">Try adjusting your search or filter criteria</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
