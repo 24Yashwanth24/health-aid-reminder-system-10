@@ -6,7 +6,7 @@ import AuthLayout from '@/components/auth/AuthLayout';
 
 const StaffLogin = () => {
   return (
-    <AuthLayout>
+    <AuthLayout title="Staff Portal" subtitle="Enter your credentials to access the staff portal" type="staff">
       <div className="flex flex-col items-center justify-center space-y-3">
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold">Staff Portal</h1>

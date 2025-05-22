@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,7 @@ import {
   CalendarClock,
   Bell,
   ArrowRight,
-  Pills,
+  Pill,
   CreditCard,
   ChevronRight
 } from 'lucide-react';
@@ -245,7 +244,7 @@ const Dashboard = () => {
                         <div>
                           <p className="font-medium">{patient.name}</p>
                           <p className="text-sm text-muted-foreground flex items-center">
-                            <Pills className="h-3 w-3 mr-1" />
+                            <Pill className="h-3 w-3 mr-1" />
                             {patient.medication || 'No medication specified'}
                           </p>
                         </div>
