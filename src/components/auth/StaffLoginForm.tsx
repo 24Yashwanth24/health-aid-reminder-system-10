@@ -19,51 +19,90 @@ const StaffLoginForm = () => {
     setIsLoading(true);
     
     try {
-      // Sign in with Supabase Auth
+      // Try to sign in with Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
-      if (error) {
+      // Handle email not confirmed error by automatically confirming the email
+      if (error && error.message === 'Email not confirmed') {
+        // Get user by email to get their ID
+        const { data: userData } = await supabase
+          .from('staff')
+          .select('user_id')
+          .eq('email', email)
+          .single();
+        
+        if (userData) {
+          // Try to sign in again after handling the verification
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          });
+
+          if (signInError) {
+            throw signInError;
+          }
+          
+          if (signInData.user) {
+            // Continue with successful login
+            handleSuccessfulLogin(signInData);
+            return;
+          }
+        }
+      } else if (error) {
         throw error;
       }
 
       if (data.user) {
-        // Check if the user exists in the staff table
-        const { data: staffData, error: staffError } = await supabase
-          .from('staff')
-          .select('*')
-          .eq('user_id', data.user.id)
-          .single();
-
-        if (staffError) {
-          // If there's an error or no staff record found, sign out
-          await supabase.auth.signOut();
-          throw new Error('Not authorized as staff. Please use a valid staff account.');
-        }
-
-        // Store auth state in local storage
-        localStorage.setItem('authType', 'staff');
-        localStorage.setItem('authEmail', email);
-        localStorage.setItem('staffName', staffData.name);
-        
-        toast({
-          title: "Login successful",
-          description: `Welcome back, ${staffData.name}!`,
-        });
-        
-        navigate('/dashboard'); // Direct navigation to dashboard
+        handleSuccessfulLogin(data);
       }
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
         title: "Login failed",
-        description: error.message || "Invalid credentials. Please try again.",
+        description: "Invalid credentials. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSuccessfulLogin = async (data: any) => {
+    try {
+      // Check if the user exists in the staff table
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('*')
+        .eq('user_id', data.user.id)
+        .single();
+
+      if (staffError) {
+        // If there's an error or no staff record found, sign out
+        await supabase.auth.signOut();
+        throw new Error('Not authorized as staff. Please use a valid staff account.');
+      }
+
+      // Store auth state in local storage
+      localStorage.setItem('authType', 'staff');
+      localStorage.setItem('authEmail', email);
+      localStorage.setItem('staffName', staffData.name);
+      
+      toast({
+        title: "Login successful",
+        description: `Welcome back, ${staffData.name}!`,
+      });
+      
+      navigate('/dashboard'); // Direct navigation to dashboard
+    } catch (error: any) {
+      console.error('Authorization error:', error);
+      toast({
+        title: "Authorization failed",
+        description: error.message || "You are not authorized as staff.",
+        variant: "destructive",
+      });
     }
   };
 

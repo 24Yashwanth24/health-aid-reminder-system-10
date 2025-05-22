@@ -40,7 +40,9 @@ const StaffRegisterForm = () => {
         options: {
           data: {
             full_name: name,
-          }
+          },
+          // Skip email verification
+          emailRedirectTo: window.location.origin + '/login'
         }
       });
 
@@ -64,16 +66,30 @@ const StaffRegisterForm = () => {
           throw staffError;
         }
 
-        toast({
-          title: "Registration successful",
-          description: "Your staff account has been created. You can now log in.",
+        // Automatically sign in after registration to skip verification
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password
         });
         
-        // Log the user out after registration so they can log in properly
-        await supabase.auth.signOut();
-        
-        // Redirect to login page
-        navigate('/login');
+        if (signInError) {
+          throw signInError;
+        }
+
+        if (signInData.user) {
+          // Store auth state in local storage
+          localStorage.setItem('authType', 'staff');
+          localStorage.setItem('authEmail', email);
+          localStorage.setItem('staffName', name);
+          
+          toast({
+            title: "Registration successful",
+            description: `Welcome, ${name}! You are now registered and logged in.`,
+          });
+          
+          // Redirect to dashboard
+          navigate('/dashboard');
+        }
       }
     } catch (error: any) {
       console.error('Registration error:', error);
