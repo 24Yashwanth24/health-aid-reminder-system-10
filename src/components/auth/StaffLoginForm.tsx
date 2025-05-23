@@ -1,64 +1,22 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import React from 'react';
 import { Mail, Lock } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import FormHeader from './FormHeader';
 import FormInput from './FormInput';
 import FormSubmitButton from './FormSubmitButton';
 import RememberMeCheckbox from './RememberMeCheckbox';
 import ForgotPasswordLink from './ForgotPasswordLink';
+import { useStaffLoginForm } from '@/hooks/useStaffLoginForm';
 
 const StaffLoginForm = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  const navigate = useNavigate();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      // Check if the staff exists in the staff table with matching email and password
-      const { data: staffData, error: staffError } = await supabase
-        .from('staff')
-        .select('*')
-        .eq('email', email)
-        .eq('Pwd', password)
-        .single();
-
-      if (staffError || !staffData) {
-        throw new Error('Invalid credentials. Please check your email and password.');
-      }
-      
-      // Store staff info in local storage
-      localStorage.setItem('authType', 'staff');
-      localStorage.setItem('authEmail', email);
-      localStorage.setItem('staffName', staffData.name);
-      localStorage.setItem('staffId', staffData.id);
-      
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${staffData.name}!`,
-      });
-      
-      // Redirect to dashboard
-      navigate('/dashboard');
-      
-    } catch (error: any) {
-      console.error('Login error:', error);
-      toast({
-        title: "Login failed",
-        description: error.message || "Invalid credentials. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    isLoading,
+    handleSubmit
+  } = useStaffLoginForm();
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
