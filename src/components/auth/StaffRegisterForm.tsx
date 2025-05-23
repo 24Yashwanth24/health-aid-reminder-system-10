@@ -33,7 +33,7 @@ const StaffRegisterForm = () => {
     setIsLoading(true);
     
     try {
-      // First check if this staff already exists in the staff table
+      // Check if this staff already exists in the staff table
       const { data: existingStaff, error: staffCheckError } = await supabase
         .from('staff')
         .select('*')
@@ -41,17 +41,13 @@ const StaffRegisterForm = () => {
         .single();
 
       if (existingStaff) {
-        // Staff exists, try to sign in directly
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-
-        if (!signInError && signInData.user) {
-          // Successfully signed in with existing account
+        // Staff exists, check password
+        if (existingStaff.Pwd === password) {
+          // Password matches, log them in
           localStorage.setItem('authType', 'staff');
           localStorage.setItem('authEmail', email);
           localStorage.setItem('staffName', existingStaff.name);
+          localStorage.setItem('staffId', existingStaff.id);
           
           toast({
             title: "Login successful",
@@ -60,54 +56,33 @@ const StaffRegisterForm = () => {
           
           navigate('/dashboard');
           return;
+        } else {
+          throw new Error('A staff with this email already exists. Please use a different email or try to log in.');
         }
       }
 
-      // Create or insert staff data directly without requiring auth verification
-      const { data: staffData, error: insertError } = await supabase
+      // Insert new staff directly into staff table
+      const { data: newStaffData, error: insertError } = await supabase
         .from('staff')
-        .upsert({
+        .insert({
           name,
           email,
           department,
           phone,
           Pwd: password,
-          user_id: crypto.randomUUID() // Generate a placeholder user_id if no auth user exists yet
-        }, { 
-          onConflict: 'email',
-          ignoreDuplicates: false
+          user_id: crypto.randomUUID() // Use a random UUID for user_id
         })
         .select();
 
       if (insertError) {
-        throw new Error(`Staff data error: ${insertError.message}`);
-      }
-
-      // Also attempt to create auth record (but don't require it to succeed)
-      try {
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { full_name: name }
-          }
-        });
-
-        if (!authError && authData.user) {
-          // If we successfully created an auth user, update the staff record with the correct user_id
-          await supabase
-            .from('staff')
-            .update({ user_id: authData.user.id })
-            .eq('email', email);
-        }
-      } catch (authError) {
-        console.log("Auth creation failed, but continuing with staff login:", authError);
+        throw new Error(`Staff registration error: ${insertError.message}`);
       }
       
-      // Store login info regardless of auth success
+      // Store staff info in local storage
       localStorage.setItem('authType', 'staff');
       localStorage.setItem('authEmail', email);
       localStorage.setItem('staffName', name);
+      localStorage.setItem('staffId', newStaffData[0].id);
       
       toast({
         title: "Registration successful",
