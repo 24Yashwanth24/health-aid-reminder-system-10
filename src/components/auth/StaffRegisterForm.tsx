@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, Mail, Lock, User, Phone, Building } from 'lucide-react';
+import { Mail, Lock, User, Phone, Building } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import FormHeader from './FormHeader';
+import FormInput from './FormInput';
+import FormSubmitButton from './FormSubmitButton';
 
 const StaffRegisterForm = () => {
   const [name, setName] = useState('');
@@ -18,79 +19,91 @@ const StaffRegisterForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const validatePasswords = () => {
     if (password !== confirmPassword) {
       toast({
         title: "Passwords don't match",
         description: "Please make sure your passwords match",
         variant: "destructive",
       });
+      return false;
+    }
+    return true;
+  };
+
+  const checkExistingStaff = async () => {
+    const { data: existingStaff, error: staffCheckError } = await supabase
+      .from('staff')
+      .select('*')
+      .eq('email', email)
+      .single();
+    
+    return { existingStaff, staffCheckError };
+  };
+
+  const handleLogin = (staffData: any) => {
+    localStorage.setItem('authType', 'staff');
+    localStorage.setItem('authEmail', email);
+    localStorage.setItem('staffName', staffData.name);
+    localStorage.setItem('staffId', staffData.id);
+    
+    toast({
+      title: "Login successful",
+      description: `Welcome back, ${staffData.name}!`,
+    });
+    
+    navigate('/dashboard');
+  };
+
+  const createNewStaff = async () => {
+    const { data: newStaffData, error: insertError } = await supabase
+      .from('staff')
+      .insert({
+        name,
+        email,
+        department,
+        phone,
+        Pwd: password,
+        user_id: crypto.randomUUID()
+      })
+      .select();
+      
+    if (insertError) {
+      throw new Error(`Staff registration error: ${insertError.message}`);
+    }
+    
+    return newStaffData;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validatePasswords()) {
       return;
     }
     
     setIsLoading(true);
     
     try {
-      // Check if this staff already exists in the staff table
-      const { data: existingStaff, error: staffCheckError } = await supabase
-        .from('staff')
-        .select('*')
-        .eq('email', email)
-        .single();
+      // Check if this staff already exists
+      const { existingStaff, staffCheckError } = await checkExistingStaff();
 
       if (existingStaff) {
         // Staff exists, check password
         if (existingStaff.Pwd === password) {
           // Password matches, log them in
-          localStorage.setItem('authType', 'staff');
-          localStorage.setItem('authEmail', email);
-          localStorage.setItem('staffName', existingStaff.name);
-          localStorage.setItem('staffId', existingStaff.id);
-          
-          toast({
-            title: "Login successful",
-            description: `Welcome back, ${existingStaff.name}!`,
-          });
-          
-          navigate('/dashboard');
+          handleLogin(existingStaff);
           return;
         } else {
           throw new Error('A staff with this email already exists. Please use a different email or try to log in.');
         }
       }
 
-      // Insert new staff directly into staff table
-      const { data: newStaffData, error: insertError } = await supabase
-        .from('staff')
-        .insert({
-          name,
-          email,
-          department,
-          phone,
-          Pwd: password,
-          user_id: crypto.randomUUID() // Use a random UUID for user_id
-        })
-        .select();
-
-      if (insertError) {
-        throw new Error(`Staff registration error: ${insertError.message}`);
-      }
+      // Insert new staff
+      const newStaffData = await createNewStaff();
       
-      // Store staff info in local storage
-      localStorage.setItem('authType', 'staff');
-      localStorage.setItem('authEmail', email);
-      localStorage.setItem('staffName', name);
-      localStorage.setItem('staffId', newStaffData[0].id);
-      
-      toast({
-        title: "Registration successful",
-        description: `Welcome, ${name}! You are now registered and logged in.`,
-      });
-      
-      // Redirect to dashboard
-      navigate('/dashboard');
+      // Store staff info in local storage and navigate to dashboard
+      handleLogin(newStaffData[0]);
       
     } catch (error: any) {
       console.error('Registration error:', error);
@@ -106,115 +119,84 @@ const StaffRegisterForm = () => {
 
   return (
     <form className="space-y-6 w-full" onSubmit={handleSubmit}>
-      <div className="text-center mb-6">
-        <Heart className="mx-auto h-12 w-12 text-red-500 animate-pulse" />
-        <p className="text-sm text-health-600 mt-2">Staff Healthcare Portal</p>
-        <h2 className="mt-2 text-xl font-semibold text-gray-800">"Your medicine, my responsibility"</h2>
-      </div>
+      <FormHeader 
+        portalType="Staff Healthcare Portal" 
+        tagline='"Your medicine, my responsibility"'
+      />
       
       <div className="space-y-4">
-        <div className="relative">
-          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-health-500 h-4 w-4" />
-          <Input
-            id="name"
-            name="name"
-            type="text"
-            autoComplete="name"
-            required
-            placeholder="Full Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="pl-10 border-health-200 focus:border-health-500 focus:ring-health-500"
-          />
-        </div>
+        <FormInput
+          id="name"
+          name="name"
+          type="text"
+          autoComplete="name"
+          required={true}
+          placeholder="Full Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          icon={User}
+        />
         
-        <div className="relative">
-          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-health-500 h-4 w-4" />
-          <Input
-            id="email-address"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            placeholder="Email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="pl-10 border-health-200 focus:border-health-500 focus:ring-health-500"
-          />
-        </div>
+        <FormInput
+          id="email-address"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required={true}
+          placeholder="Email address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          icon={Mail}
+        />
         
-        <div className="relative">
-          <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-health-500 h-4 w-4" />
-          <Input
-            id="department"
-            name="department"
-            type="text"
-            placeholder="Department (optional)"
-            value={department}
-            onChange={(e) => setDepartment(e.target.value)}
-            className="pl-10 border-health-200 focus:border-health-500 focus:ring-health-500"
-          />
-        </div>
+        <FormInput
+          id="department"
+          name="department"
+          type="text"
+          placeholder="Department (optional)"
+          value={department}
+          onChange={(e) => setDepartment(e.target.value)}
+          icon={Building}
+        />
         
-        <div className="relative">
-          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-health-500 h-4 w-4" />
-          <Input
-            id="phone"
-            name="phone"
-            type="tel"
-            placeholder="Phone Number (optional)"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="pl-10 border-health-200 focus:border-health-500 focus:ring-health-500"
-          />
-        </div>
+        <FormInput
+          id="phone"
+          name="phone"
+          type="tel"
+          placeholder="Phone Number (optional)"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          icon={Phone}
+        />
         
-        <div className="relative">
-          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-health-500 h-4 w-4" />
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            required
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="pl-10 border-health-200 focus:border-health-500 focus:ring-health-500"
-          />
-        </div>
+        <FormInput
+          id="password"
+          name="password"
+          type="password"
+          required={true}
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          icon={Lock}
+        />
         
-        <div className="relative">
-          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-health-500 h-4 w-4" />
-          <Input
-            id="confirm-password"
-            name="confirm-password"
-            type="password"
-            required
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="pl-10 border-health-200 focus:border-health-500 focus:ring-health-500"
-          />
-        </div>
+        <FormInput
+          id="confirm-password"
+          name="confirm-password"
+          type="password"
+          required={true}
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          icon={Lock}
+        />
       </div>
 
-      <div>
-        <Button
-          type="submit"
-          className="w-full bg-health-600 hover:bg-health-700"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <div className="flex items-center justify-center">
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Creating account...
-            </div>
-          ) : 'Create Staff Account'}
-        </Button>
-      </div>
+      <FormSubmitButton
+        isLoading={isLoading}
+        loadingText="Creating account..."
+        buttonText="Create Staff Account"
+      />
     </form>
   );
 };
