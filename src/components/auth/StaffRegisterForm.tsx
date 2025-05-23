@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -33,16 +32,14 @@ const StaffRegisterForm = () => {
     setIsLoading(true);
     
     try {
-      // Register the user with Supabase Auth
+      // Create a new user in auth system
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             full_name: name,
-          },
-          // Skip email verification
-          emailRedirectTo: window.location.origin + '/login'
+          }
         }
       });
 
@@ -59,14 +56,15 @@ const StaffRegisterForm = () => {
             name,
             email,
             department,
-            phone
+            phone,
+            Pwd: password // Store password in staff table (not recommended in production)
           });
 
         if (staffError) {
           throw staffError;
         }
 
-        // Automatically sign in after registration to skip verification
+        // Skip email verification and directly sign in the user
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password

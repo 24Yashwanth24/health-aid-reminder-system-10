@@ -25,34 +25,47 @@ const StaffLoginForm = () => {
         password
       });
 
-      // Handle email not confirmed error by automatically confirming the email
-      if (error && error.message === 'Email not confirmed') {
-        // Get user by email to get their ID
-        const { data: userData } = await supabase
+      // If there's an error, try to find the staff member by email
+      if (error) {
+        // Get staff by email
+        const { data: staffData, error: staffError } = await supabase
           .from('staff')
-          .select('user_id')
+          .select('*')
           .eq('email', email)
+          .eq('Pwd', password)
           .single();
         
-        if (userData) {
-          // Try to sign in again after handling the verification
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email,
-            password
-          });
-
-          if (signInError) {
-            throw signInError;
-          }
-          
-          if (signInData.user) {
-            // Continue with successful login
-            handleSuccessfulLogin(signInData);
-            return;
-          }
+        if (staffError || !staffData) {
+          throw new Error('Invalid credentials. Please check your email and password.');
         }
-      } else if (error) {
-        throw error;
+        
+        // If staff exists but not in auth, create auth user and sign them in
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: staffData.name,
+            }
+          }
+        });
+
+        if (signUpError) {
+          throw signUpError;
+        }
+        
+        // Store auth state in local storage
+        localStorage.setItem('authType', 'staff');
+        localStorage.setItem('authEmail', email);
+        localStorage.setItem('staffName', staffData.name);
+        
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${staffData.name}!`,
+        });
+        
+        navigate('/dashboard');
+        return;
       }
 
       if (data.user) {
@@ -62,7 +75,7 @@ const StaffLoginForm = () => {
       console.error('Login error:', error);
       toast({
         title: "Login failed",
-        description: "Invalid credentials. Please try again.",
+        description: error.message || "Invalid credentials. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -80,20 +93,69 @@ const StaffLoginForm = () => {
         .single();
 
       if (staffError) {
-        // If there's an error or no staff record found, sign out
-        await supabase.auth.signOut();
-        throw new Error('Not authorized as staff. Please use a valid staff account.');
+        // Try to find staff by email instead
+        const { data: emailStaffData, error: emailStaffError } = await supabase
+          .from('staff')
+          .select('*')
+          .eq('email', email)
+          .single();
+        
+        if (emailStaffError || !emailStaffData) {
+          // Create new staff record if not found
+          const { error: createError } = await supabase
+            .from('staff')
+            .insert({
+              user_id: data.user.id,
+              email: email,
+              name: email.split('@')[0], // Use email as default name
+              Pwd: password // Store password in staff table
+            });
+          
+          if (createError) {
+            throw createError;
+          }
+          
+          // Store auth state in local storage
+          localStorage.setItem('authType', 'staff');
+          localStorage.setItem('authEmail', email);
+          localStorage.setItem('staffName', email.split('@')[0]);
+          
+          toast({
+            title: "Login successful",
+            description: `Welcome, ${email.split('@')[0]}!`,
+          });
+        } else {
+          // Update the existing staff record with user_id if found by email
+          const { error: updateError } = await supabase
+            .from('staff')
+            .update({ user_id: data.user.id })
+            .eq('id', emailStaffData.id);
+          
+          if (updateError) {
+            throw updateError;
+          }
+          
+          // Store auth state in local storage
+          localStorage.setItem('authType', 'staff');
+          localStorage.setItem('authEmail', email);
+          localStorage.setItem('staffName', emailStaffData.name);
+          
+          toast({
+            title: "Login successful",
+            description: `Welcome back, ${emailStaffData.name}!`,
+          });
+        }
+      } else {
+        // Store auth state in local storage
+        localStorage.setItem('authType', 'staff');
+        localStorage.setItem('authEmail', email);
+        localStorage.setItem('staffName', staffData.name);
+        
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${staffData.name}!`,
+        });
       }
-
-      // Store auth state in local storage
-      localStorage.setItem('authType', 'staff');
-      localStorage.setItem('authEmail', email);
-      localStorage.setItem('staffName', staffData.name);
-      
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${staffData.name}!`,
-      });
       
       navigate('/dashboard'); // Direct navigation to dashboard
     } catch (error: any) {

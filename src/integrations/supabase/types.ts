@@ -164,6 +164,7 @@ export type Database = {
           id: string
           name: string
           phone: string | null
+          Pwd: string
           role: string | null
           updated_at: string
           user_id: string
@@ -175,6 +176,7 @@ export type Database = {
           id?: string
           name: string
           phone?: string | null
+          Pwd: string
           role?: string | null
           updated_at?: string
           user_id: string
@@ -186,6 +188,7 @@ export type Database = {
           id?: string
           name?: string
           phone?: string | null
+          Pwd?: string
           role?: string | null
           updated_at?: string
           user_id?: string
