@@ -30,7 +30,7 @@ export const useStaffLoginForm = () => {
       console.error('Login error:', error);
       toast({
         title: "Login failed",
-        description: error.message || "Invalid credentials. Please try again.",
+        description: "Invalid credentials. Please try again.",
         variant: "destructive",
       });
     } finally {

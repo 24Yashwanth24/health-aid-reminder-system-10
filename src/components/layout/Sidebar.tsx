@@ -96,35 +96,6 @@ const Sidebar = () => {
             </NavLink>
           </div>
         </div>
-        <div className="mt-auto px-3 py-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex h-8 w-full items-center justify-center px-2">
-                <Avatar className="mr-2 h-5 w-5">
-                  <AvatarImage src="https://github.com/shadcn.png" alt="Avatar" />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-                <span className="text-sm font-medium">My Account</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" forceMount>
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <HelpCircle className="mr-2 h-4 w-4" />
-                Support
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <LogoutButton />
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
       </div>
     </div>
   );
