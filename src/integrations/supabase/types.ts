@@ -21,6 +21,7 @@ export type Database = {
           status: string | null
           updated_at: string
           user_id: string
+          amt: number|null
         }
         Insert: {
           created_at?: string
@@ -33,6 +34,7 @@ export type Database = {
           status?: string | null
           updated_at?: string
           user_id: string
+          amt:number|null
         }
         Update: {
           created_at?: string
@@ -62,7 +64,8 @@ export type Database = {
           payment_status: string | null
           phone: string | null
           updated_at: string
-          user_id: string
+          status: string | null
+          amt:number|null
         }
         Insert: {
           address?: string | null
@@ -77,7 +80,7 @@ export type Database = {
           payment_status?: string | null
           phone?: string | null
           updated_at?: string
-          user_id: string
+          status: string
         }
         Update: {
           address?: string | null
@@ -92,7 +95,7 @@ export type Database = {
           payment_status?: string | null
           phone?: string | null
           updated_at?: string
-          user_id?: string
+          status?: string
         }
         Relationships: []
       }

@@ -8,6 +8,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Plus, Truck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import DeliveryStatusCard from '@/components/deliveries/DeliveryStatusCard';
+import {supabase} from '@/integrations/supabase/client';
+
+const { data } = await supabase.from('patients').select('*');
+
+const hi = data.map(({ id, name:patientName, medication, address,next_refill_date:deliveryDate,status, payment_status:paymentStatus,amt:paymentAmount }) => ({
+  id,
+  patientName,
+  medication,
+  address,
+  deliveryDate,
+  status,
+  paymentStatus,
+  paymentAmount,
+}));
 
 interface Delivery {
   id: string;
@@ -26,68 +40,7 @@ const Deliveries = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [paymentFilter, setPaymentFilter] = useState('all');
 
-  const [deliveries, setDeliveries] = useState<Delivery[]>([
-    {
-      id: '1',
-      patientName: 'Rajesh Kumar',
-      medication: 'Metformin 500mg',
-      address: '123 Gandhi Road, Mumbai, MH 400001',
-      deliveryDate: 'Apr 10, 2025',
-      status: 'pending',
-      paymentStatus: 'unpaid',
-      paymentAmount: 850,
-    },
-    {
-      id: '2',
-      patientName: 'Priya Sharma',
-      medication: 'Levothyroxine 88mcg',
-      address: '456 Nehru Avenue, Delhi, DL 110001',
-      deliveryDate: 'Apr 8, 2025',
-      status: 'processing',
-      paymentStatus: 'paid',
-      paymentAmount: 1200,
-    },
-    {
-      id: '3',
-      patientName: 'Vikram Singh',
-      medication: 'Lisinopril 10mg',
-      address: '789 Patel Street, Ahmedabad, GJ 380001',
-      deliveryDate: 'Apr 9, 2025',
-      status: 'in_transit',
-      paymentStatus: 'paid',
-      paymentAmount: 650,
-    },
-    {
-      id: '4',
-      patientName: 'Ananya Patel',
-      medication: 'Levothyroxine 50mcg',
-      address: '101 Tagore Lane, Kolkata, WB 700001',
-      deliveryDate: 'Apr 11, 2025',
-      status: 'delivered',
-      paymentStatus: 'paid',
-      paymentAmount: 950,
-    },
-    {
-      id: '5',
-      patientName: 'Rohit Verma',
-      medication: 'Glipizide 5mg',
-      address: '202 Bose Road, Chennai, TN 600001',
-      deliveryDate: 'Apr 12, 2025',
-      status: 'pending',
-      paymentStatus: 'unpaid',
-      paymentAmount: 780,
-    },
-    {
-      id: '6',
-      patientName: 'Sunita Agarwal',
-      medication: 'Levothyroxine 75mcg',
-      address: '303 Shastri Nagar, Bangalore, KA 560001',
-      deliveryDate: 'Apr 14, 2025',
-      status: 'processing',
-      paymentStatus: 'processing',
-      paymentAmount: 1100,
-    },
-  ]);
+  const [deliveries, setDeliveries] = useState(hi);
 
   const handleStatusChange = (id: string, newStatus: string) => {
     setDeliveries(
@@ -135,10 +88,6 @@ const Deliveries = () => {
           <h1 className="text-2xl font-bold tracking-tight">Medication Deliveries</h1>
           <p className="text-muted-foreground">Track and manage medication deliveries to patients</p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Delivery
-        </Button>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">

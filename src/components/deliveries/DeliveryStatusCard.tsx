@@ -12,8 +12,9 @@ interface DeliveryStatusCardProps {
     medication: string;
     address: string;
     deliveryDate: string;
-    status: 'pending' | 'processing' | 'in_transit' | 'delivered';
-    paymentStatus: 'paid' | 'unpaid' | 'processing';
+    status: string;
+    paymentStatus: string;
+    paymentAmount: number;
   };
   onStatusChange: (id: string, status: string) => void;
   onPaymentStatusChange: (id: string, status: string) => void;
