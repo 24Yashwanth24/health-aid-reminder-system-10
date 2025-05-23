@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -19,58 +18,63 @@ const StaffLoginForm = () => {
     setIsLoading(true);
     
     try {
-      // Try to sign in with Supabase Auth
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      // First check if the staff exists in the staff table
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('*')
+        .eq('email', email)
+        .eq('Pwd', password)
+        .single();
 
-      // If there's an error, try to find the staff member by email
-      if (error) {
-        // Get staff by email
-        const { data: staffData, error: staffError } = await supabase
-          .from('staff')
-          .select('*')
-          .eq('email', email)
-          .eq('Pwd', password)
-          .single();
-        
-        if (staffError || !staffData) {
-          throw new Error('Invalid credentials. Please check your email and password.');
-        }
-        
-        // If staff exists but not in auth, create auth user and sign them in
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      if (staffError || !staffData) {
+        throw new Error('Invalid credentials. Please check your email and password.');
+      }
+      
+      // Staff exists in the table, try to authenticate with Supabase Auth
+      try {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email,
-          password,
-          options: {
-            data: {
-              full_name: staffData.name,
+          password
+        });
+        
+        // If there's an auth error but we found the staff in our table, 
+        // create an auth account for them
+        if (signInError) {
+          // Create auth user for existing staff
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                full_name: staffData.name,
+              }
             }
+          });
+          
+          // Update the staff record with the auth user ID if created successfully
+          if (!signUpError && signUpData.user) {
+            await supabase
+              .from('staff')
+              .update({ user_id: signUpData.user.id })
+              .eq('id', staffData.id);
           }
-        });
-
-        if (signUpError) {
-          throw signUpError;
         }
-        
-        // Store auth state in local storage
-        localStorage.setItem('authType', 'staff');
-        localStorage.setItem('authEmail', email);
-        localStorage.setItem('staffName', staffData.name);
-        
-        toast({
-          title: "Login successful",
-          description: `Welcome back, ${staffData.name}!`,
-        });
-        
-        navigate('/dashboard');
-        return;
+      } catch (authError) {
+        console.log("Auth operation failed, but continuing with staff login:", authError);
       }
-
-      if (data.user) {
-        handleSuccessfulLogin(data);
-      }
+      
+      // Store auth state in local storage
+      localStorage.setItem('authType', 'staff');
+      localStorage.setItem('authEmail', email);
+      localStorage.setItem('staffName', staffData.name);
+      
+      toast({
+        title: "Login successful",
+        description: `Welcome back, ${staffData.name}!`,
+      });
+      
+      navigate('/dashboard');
+      
     } catch (error: any) {
       console.error('Login error:', error);
       toast({

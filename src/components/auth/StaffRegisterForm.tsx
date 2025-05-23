@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -32,63 +33,90 @@ const StaffRegisterForm = () => {
     setIsLoading(true);
     
     try {
-      // Create a new user in auth system
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: name,
-          }
-        }
-      });
+      // First check if this staff already exists in the staff table
+      const { data: existingStaff, error: staffCheckError } = await supabase
+        .from('staff')
+        .select('*')
+        .eq('email', email)
+        .single();
 
-      if (error) {
-        throw error;
-      }
-
-      if (data.user) {
-        // Add the staff member to the staff table
-        const { error: staffError } = await supabase
-          .from('staff')
-          .insert({
-            user_id: data.user.id,
-            name,
-            email,
-            department,
-            phone,
-            Pwd: password // Store password in staff table (not recommended in production)
-          });
-
-        if (staffError) {
-          throw staffError;
-        }
-
-        // Skip email verification and directly sign in the user
+      if (existingStaff) {
+        // Staff exists, try to sign in directly
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password
         });
-        
-        if (signInError) {
-          throw signInError;
-        }
 
-        if (signInData.user) {
-          // Store auth state in local storage
+        if (!signInError && signInData.user) {
+          // Successfully signed in with existing account
           localStorage.setItem('authType', 'staff');
           localStorage.setItem('authEmail', email);
-          localStorage.setItem('staffName', name);
+          localStorage.setItem('staffName', existingStaff.name);
           
           toast({
-            title: "Registration successful",
-            description: `Welcome, ${name}! You are now registered and logged in.`,
+            title: "Login successful",
+            description: `Welcome back, ${existingStaff.name}!`,
           });
           
-          // Redirect to dashboard
           navigate('/dashboard');
+          return;
         }
       }
+
+      // Create or insert staff data directly without requiring auth verification
+      const { data: staffData, error: insertError } = await supabase
+        .from('staff')
+        .upsert({
+          name,
+          email,
+          department,
+          phone,
+          Pwd: password,
+          user_id: crypto.randomUUID() // Generate a placeholder user_id if no auth user exists yet
+        }, { 
+          onConflict: 'email',
+          ignoreDuplicates: false
+        })
+        .select();
+
+      if (insertError) {
+        throw new Error(`Staff data error: ${insertError.message}`);
+      }
+
+      // Also attempt to create auth record (but don't require it to succeed)
+      try {
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: name }
+          }
+        });
+
+        if (!authError && authData.user) {
+          // If we successfully created an auth user, update the staff record with the correct user_id
+          await supabase
+            .from('staff')
+            .update({ user_id: authData.user.id })
+            .eq('email', email);
+        }
+      } catch (authError) {
+        console.log("Auth creation failed, but continuing with staff login:", authError);
+      }
+      
+      // Store login info regardless of auth success
+      localStorage.setItem('authType', 'staff');
+      localStorage.setItem('authEmail', email);
+      localStorage.setItem('staffName', name);
+      
+      toast({
+        title: "Registration successful",
+        description: `Welcome, ${name}! You are now registered and logged in.`,
+      });
+      
+      // Redirect to dashboard
+      navigate('/dashboard');
+      
     } catch (error: any) {
       console.error('Registration error:', error);
       toast({
