@@ -69,13 +69,6 @@ const DeliveryStatusCard = ({ delivery, onStatusUpdate }: DeliveryStatusCardProp
     }
   };
 
-  const handlePaymentStatusUpdate = () => {
-    // Toggle payment status between paid and pending
-    const newPaymentStatus = delivery.paymentStatus === 'paid' ? 'pending' : 'paid';
-    // For now, we'll just update the delivery status since we don't have a separate payment update handler
-    console.log('Payment status update:', newPaymentStatus);
-  };
-
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
@@ -127,15 +120,7 @@ const DeliveryStatusCard = ({ delivery, onStatusUpdate }: DeliveryStatusCardProp
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between pt-2">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={handlePaymentStatusUpdate}
-        >
-          {delivery.paymentStatus === 'paid' ? 'Mark as Pending' : 'Mark as Paid'}
-        </Button>
-        
+      <CardFooter className="flex justify-end pt-2">
         <Button 
           size="sm"
           onClick={handleUpdateStatus}
