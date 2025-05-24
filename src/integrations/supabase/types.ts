@@ -21,7 +21,6 @@ export type Database = {
           status: string | null
           updated_at: string
           user_id: string
-          amt: number|null
         }
         Insert: {
           created_at?: string
@@ -34,7 +33,6 @@ export type Database = {
           status?: string | null
           updated_at?: string
           user_id: string
-          amt:number|null
         }
         Update: {
           created_at?: string
@@ -52,50 +50,52 @@ export type Database = {
       }
       patients: {
         Row: {
-          address: string | null
+          address: string
           age: number
-          condition: string | null
+          amt: number | null
+          condition: string
           created_at: string
-          gender: string | null
+          gender: string
           id: string
-          medication: string | null
+          medication: string
           name: string
           next_refill_date: string
           payment_status: string | null
-          phone: string | null
-          updated_at: string
+          phone: string
           status: string | null
-          amt:number|null
+          updated_at: string
         }
         Insert: {
-          address?: string | null
+          address: string
           age: number
-          condition?: string | null
+          amt?: number | null
+          condition: string
           created_at?: string
-          gender?: string | null
+          gender: string
           id?: string
-          medication?: string | null
+          medication: string
           name: string
           next_refill_date: string
           payment_status?: string | null
-          phone?: string | null
+          phone: string
+          status?: string | null
           updated_at?: string
-          status: string
         }
         Update: {
-          address?: string | null
+          address?: string
           age?: number
-          condition?: string | null
+          amt?: number | null
+          condition?: string
           created_at?: string
-          gender?: string | null
+          gender?: string
           id?: string
-          medication?: string | null
+          medication?: string
           name?: string
           next_refill_date?: string
           payment_status?: string | null
-          phone?: string | null
+          phone?: string
+          status?: string | null
           updated_at?: string
-          status?: string
         }
         Relationships: []
       }
@@ -135,30 +135,6 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          created_at: string
-          full_name: string | null
-          id: string
-          updated_at: string
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string
-          full_name?: string | null
-          id: string
-          updated_at?: string
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string
-          full_name?: string | null
-          id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       staff: {
         Row: {
           created_at: string
@@ -182,7 +158,7 @@ export type Database = {
           Pwd: string
           role?: string | null
           updated_at?: string
-          user_id: string
+          user_id?: string
         }
         Update: {
           created_at?: string
