@@ -34,6 +34,7 @@ const Payments = () => {
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [upiId, setUpiId] = useState('');
+  const [editAmount, setEditAmount] = useState('');
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -109,6 +110,7 @@ const Payments = () => {
 
   const handleProcessPayment = (payment: Payment) => {
     setSelectedPayment(payment);
+    setEditAmount(payment.amount.toString());
     setUpiId('');
     setDialogOpen(true);
   };
@@ -117,10 +119,13 @@ const Payments = () => {
     if (!selectedPayment) return;
 
     try {
+      const updatedAmount = parseFloat(editAmount) || selectedPayment.amount;
+      
       const { error } = await supabase
         .from('patients')
         .update({ 
-          payment_status: 'paid'
+          payment_status: 'paid',
+          amt: updatedAmount
         })
         .eq('id', selectedPayment.id);
 
@@ -141,13 +146,14 @@ const Payments = () => {
             ? { 
                 ...payment, 
                 status: 'paid', 
-                payment_mode: paymentMethod 
+                payment_mode: paymentMethod,
+                amount: updatedAmount
               } 
             : payment
         )
       );
 
-      let successMessage = `${selectedPayment.patient_name}'s payment of ₹${selectedPayment.amount} marked as completed via ${paymentMethod}.`;
+      let successMessage = `${selectedPayment.patient_name}'s payment of ₹${updatedAmount} marked as completed via ${paymentMethod}.`;
       
       if (paymentMethod === 'upi') {
         successMessage += ` UPI ID: ${upiId}`;
@@ -163,6 +169,46 @@ const Payments = () => {
       toast({
         title: "Error",
         description: "Failed to process payment",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleMarkUnpaid = async (paymentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('patients')
+        .update({ payment_status: 'pending' })
+        .eq('id', paymentId);
+
+      if (error) {
+        console.error('Error updating payment status:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update payment status",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update local state
+      setPayments(prevPayments => 
+        prevPayments.map(payment => 
+          payment.id === paymentId 
+            ? { ...payment, status: 'pending', payment_mode: null } 
+            : payment
+        )
+      );
+
+      toast({
+        title: "Payment Status Updated",
+        description: "Payment marked as pending",
+      });
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update payment status",
         variant: "destructive",
       });
     }
@@ -226,6 +272,7 @@ const Payments = () => {
             <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="paid">Paid</SelectItem>
+            <SelectItem value="processing">Processing</SelectItem>
           </SelectContent>
         </Select>
         
@@ -234,6 +281,7 @@ const Payments = () => {
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="pending">Pending</TabsTrigger>
             <TabsTrigger value="paid">Paid</TabsTrigger>
+            <TabsTrigger value="processing">Processing</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -254,6 +302,8 @@ const Payments = () => {
                   className={
                     payment.status === 'paid' 
                       ? "bg-green-100 text-green-800" 
+                      : payment.status === 'processing'
+                      ? "bg-blue-100 text-blue-800"
                       : "bg-yellow-100 text-yellow-800"
                   }
                 >
@@ -300,14 +350,27 @@ const Payments = () => {
                   </div>
                 </div>
                 
-                {payment.status === 'pending' && (
-                  <Button 
-                    onClick={() => handleProcessPayment(payment)}
-                    className="sm:ml-auto bg-health-600 hover:bg-health-700"
-                  >
-                    Process Payment
-                  </Button>
-                )}
+                <div className="flex gap-2">
+                  {payment.status !== 'paid' && (
+                    <Button 
+                      onClick={() => handleProcessPayment(payment)}
+                      className="bg-health-600 hover:bg-health-700"
+                      size="sm"
+                    >
+                      Process Payment
+                    </Button>
+                  )}
+                  
+                  {payment.status === 'paid' && (
+                    <Button 
+                      variant="outline"
+                      onClick={() => handleMarkUnpaid(payment.id)}
+                      size="sm"
+                    >
+                      Mark as Unpaid
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -326,34 +389,51 @@ const Payments = () => {
           <DialogHeader>
             <DialogTitle>Process Payment</DialogTitle>
             <DialogDescription>
-              Select a payment method to process {selectedPayment?.patient_name}'s payment of ₹{selectedPayment?.amount}
+              Process {selectedPayment?.patient_name}'s payment for {selectedPayment?.medication_name}
             </DialogDescription>
           </DialogHeader>
           
-          <div className="py-4">
-            <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="gap-6">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="cash" id="cash" />
-                <Label htmlFor="cash" className="flex items-center">
-                  <IndianRupee className="h-4 w-4 mr-2" /> Cash Payment
-                </Label>
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="amount">Payment Amount</Label>
+              <div className="flex items-center">
+                <IndianRupee className="h-4 w-4 mr-2" />
+                <Input 
+                  id="amount"
+                  type="number"
+                  value={editAmount}
+                  onChange={(e) => setEditAmount(e.target.value)}
+                  className="w-full"
+                />
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="upi" id="upi" />
-                <Label htmlFor="upi" className="flex items-center">
-                  <CreditCard className="h-4 w-4 mr-2" /> UPI Payment
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="card" id="card" />
-                <Label htmlFor="card" className="flex items-center">
-                  <CreditCard className="h-4 w-4 mr-2" /> Card Payment
-                </Label>
-              </div>
-            </RadioGroup>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Payment Method</Label>
+              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="gap-6">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="cash" id="cash" />
+                  <Label htmlFor="cash" className="flex items-center">
+                    <IndianRupee className="h-4 w-4 mr-2" /> Cash Payment
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="upi" id="upi" />
+                  <Label htmlFor="upi" className="flex items-center">
+                    <CreditCard className="h-4 w-4 mr-2" /> UPI Payment
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="card" id="card" />
+                  <Label htmlFor="card" className="flex items-center">
+                    <CreditCard className="h-4 w-4 mr-2" /> Card Payment
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
             
             {paymentMethod === 'upi' && (
-              <div className="mt-4 space-y-2">
+              <div className="space-y-2">
                 <Label htmlFor="upi-id">Patient's UPI ID</Label>
                 <Input 
                   id="upi-id" 
