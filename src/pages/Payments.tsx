@@ -39,17 +39,38 @@ const Payments = () => {
 
   useEffect(() => {
     fetchPayments();
+    
+    // Set up real-time subscription for changes to the patients table
+    const subscription = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'patients'
+        },
+        (payload) => {
+          console.log('Change received!', payload);
+          fetchPayments();
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchPayments = async () => {
     try {
       const { data, error } = await supabase
-        .from('payments')
+        .from('patients')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching payments:', error);
+        console.error('Error fetching patients:', error);
         toast({
           title: "Error",
           description: "Failed to fetch payments data",
@@ -58,16 +79,22 @@ const Payments = () => {
         return;
       }
 
-      // Calculate refill days for each payment
-      const paymentsWithRefillDays = data.map(payment => {
-        const refillDate = new Date(payment.refill_date);
+      // Transform patients data to payments format
+      const paymentsWithRefillDays = data.map(patient => {
+        const refillDate = new Date(patient.next_refill_date);
         const today = new Date();
         const diffTime = refillDate.getTime() - today.getTime();
         const refillDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
         return {
-          ...payment,
-          patient_name: payment.medication_name, // Using medication_name as patient identifier for now
+          id: patient.id,
+          patient_name: patient.name,
+          amount: patient.amt || 1500,
+          status: patient.payment_status || 'pending',
+          payment_mode: null,
+          medication_name: patient.medication,
+          created_at: patient.created_at,
+          refill_date: patient.next_refill_date,
           refill_days: refillDays > 0 ? refillDays : 0
         };
       });
@@ -91,10 +118,9 @@ const Payments = () => {
 
     try {
       const { error } = await supabase
-        .from('payments')
+        .from('patients')
         .update({ 
-          status: 'paid',
-          payment_mode: paymentMethod 
+          payment_status: 'paid'
         })
         .eq('id', selectedPayment.id);
 
