@@ -51,23 +51,32 @@ const DeliveryStatusCard = ({ delivery, onStatusUpdate }: DeliveryStatusCardProp
     }
   };
 
-  const getNextStatus = (currentStatus: string) => {
+  const getAvailableActions = (currentStatus: string) => {
     switch (currentStatus) {
       case 'scheduled':
-        return 'in-transit';
+        return [
+          { status: 'in-transit', label: 'Mark as In Transit', variant: 'default' as const },
+          { status: 'failed', label: 'Mark as Failed', variant: 'destructive' as const }
+        ];
       case 'in-transit':
-        return 'delivered';
+        return [
+          { status: 'delivered', label: 'Mark as Delivered', variant: 'default' as const },
+          { status: 'failed', label: 'Mark as Failed', variant: 'destructive' as const }
+        ];
+      case 'delivered':
+        return [];
+      case 'failed':
+        return [
+          { status: 'scheduled', label: 'Reschedule', variant: 'outline' as const }
+        ];
       default:
-        return currentStatus;
+        return [
+          { status: 'scheduled', label: 'Mark as Scheduled', variant: 'outline' as const }
+        ];
     }
   };
 
-  const handleUpdateStatus = () => {
-    const nextStatus = getNextStatus(delivery.status);
-    if (nextStatus !== delivery.status) {
-      onStatusUpdate(delivery.id, nextStatus);
-    }
-  };
+  const availableActions = getAvailableActions(delivery.status);
 
   return (
     <Card className="h-full">
@@ -120,16 +129,21 @@ const DeliveryStatusCard = ({ delivery, onStatusUpdate }: DeliveryStatusCardProp
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end pt-2">
-        <Button 
-          size="sm"
-          onClick={handleUpdateStatus}
-          disabled={delivery.status === 'delivered'}
-        >
-          {delivery.status === 'delivered' 
-            ? 'Delivered' 
-            : `Mark as ${getStatusText(getNextStatus(delivery.status))}`}
-        </Button>
+      <CardFooter className="flex justify-end gap-2 pt-2">
+        {availableActions.length > 0 ? (
+          availableActions.map((action, index) => (
+            <Button
+              key={index}
+              size="sm"
+              variant={action.variant}
+              onClick={() => onStatusUpdate(delivery.id, action.status)}
+            >
+              {action.label}
+            </Button>
+          ))
+        ) : (
+          <div className="text-sm text-gray-500">No actions available</div>
+        )}
       </CardFooter>
     </Card>
   );
